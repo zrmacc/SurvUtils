@@ -26,9 +26,10 @@
 #' @param y_lim Y-axis limits.
 #' @return ggplot.
 #' 
-#' @importFrom dplyr "%>%" filter rename
+#' @importFrom dplyr "%>%"
 #' @importFrom ggplot2 aes ggplot geom_ribbon geom_step 
 #'   scale_fill_manual theme
+#' @export
 
 PlotAUC <- function(
   data,
@@ -50,6 +51,14 @@ PlotAUC <- function(
   y_lim = c(0, 1)
 ) {
   
+  # Defaults.
+  if (is.null(x_max)) {
+    x_max <- max(data %>% dplyr::select(time_name))
+  }
+  if (is.null(tau)) {
+    tau <- x_max
+  }
+  
   # Data prep.
   df <- data %>%
     dplyr::rename(
@@ -60,7 +69,7 @@ PlotAUC <- function(
     dplyr::filter(arm == which_arm) %>%
     GetKMPlotFrame(
       return_surv = return_surv,
-      tau = tau
+      tau = x_max
     )
   
   # Plotting.
@@ -70,7 +79,7 @@ PlotAUC <- function(
   q <- ggplot2::ggplot() +
     ggplot2::theme_bw() + 
     ggplot2::geom_ribbon(
-      data = df,
+      data = df %>% dplyr::filter(time <= tau),
       aes(x = time, ymin = 0, ymax = prob, fill = arm_label),
       alpha = 0.5
     ) + 
@@ -93,7 +102,8 @@ PlotAUC <- function(
     ggplot2::scale_x_continuous(
       name = x_name,
       breaks = x_breaks,
-      labels = x_labs
+      labels = x_labs,
+      limits = c(0, x_max)
     ) +
     ggplot2::scale_y_continuous(
       name = y_name,
