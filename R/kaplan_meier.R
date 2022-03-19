@@ -48,20 +48,29 @@ TabulateKM <- function(
   # Hazard.
   out$haz <- out$events / out$nar
   out$cum_haz <- cumsum(out$haz)
-  out$var_cum_haz <- cumsum(1 / out$nar^2)
+  out$var_cum_haz <- cumsum(out$events / out$nar^2)
+  
   out$cum_haz_lower <- out$cum_haz * 
     exp(-z * sqrt(out$var_cum_haz) / out$cum_haz)
   out$cum_haz_upper <- out$cum_haz *
     exp(+z * sqrt(out$var_cum_haz) / out$cum_haz)
   
+  out$cum_haz_lower <- ifelse(out$cum_haz == 0.0, 0, out$cum_haz_lower)
+  out$cum_haz_upper <- ifelse(out$cum_haz == 0.0, 0, out$cum_haz_upper)
+  
   # Survival.
   out$surv <- cumprod(1 - out$haz)
   out$var_surv <- (out$surv^2) * out$var_cum_haz
+  
   out$surv_lower <- out$surv ^ exp(
     -z * sqrt(out$var_surv) / (out$surv * log(out$surv))
   )
   out$surv_upper <- out$surv ^ exp(
     +z * sqrt(out$var_surv) / (out$surv * log(out$surv))
   )
+  
+  out$surv_lower <- ifelse(out$surv == 1.0, 1, out$surv_lower)
+  out$surv_upper <- ifelse(out$surv == 1.0, 1, out$surv_upper)
+  
   return(out)
 }
