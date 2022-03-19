@@ -1,13 +1,13 @@
 Package: SurvUtils
 Title: Utility Functions for Survival Analysis
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: 
     person(given = "Zachary",
            family = "McCaw",
            role = c("aut", "cre"),
            email = "zmccaw@alumni.harvard.edu",
            comment = c(ORCID = "0000-0002-2006-9828"))
-Description: Functions for plotting survival data.
+Description: Utility functions for survival analysis.
 License: GPL-3
 Encoding: UTF-8
 Imports:
@@ -18,4 +18,4 @@ Imports:
   survival,
   tidyr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
