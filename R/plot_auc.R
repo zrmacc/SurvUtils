@@ -1,16 +1,15 @@
 # Purpose: Plot area under the curve.
-# Updated: 2021-05-01
+# Updated: 2022-03-27
 
 # -----------------------------------------------------------------------------
-# Area under the curve.
+# Plot area under the curve.
 # -----------------------------------------------------------------------------
 
 #' Plot Area Under the Kaplan-Meier Curve.
 #'
 #' @param data Data including time, status, arm.
-#' @param arm_label Label for the arm.
-#' @param arm_name Name of arm column.
 #' @param color Color.
+#' @param label Label for the arm.
 #' @param legend_pos Legend position.
 #' @param return_surv Logical, TRUE for survival, FALSE for cumulative incidence.
 #' @param status_name Name of status column.
@@ -27,15 +26,12 @@
 #' @return ggplot.
 #' 
 #' @importFrom dplyr "%>%"
-#' @importFrom ggplot2 aes ggplot geom_ribbon geom_step 
-#'   scale_fill_manual theme
 #' @export
 
-PlotAUC <- function(
+PlotOneSampleAUC <- function(
   data,
-  arm_label = "Placebo",
-  arm_name = "arm",
-  color = "#C65842",
+  color = "#0F9D58",
+  label = "Ctrl",
   legend_pos = "top",
   return_surv = TRUE,
   status_name = "status",
@@ -58,19 +54,20 @@ PlotAUC <- function(
   if (is.null(tau)) {
     tau <- x_max
   }
-  
+  if (is.null(x_breaks)) {
+    x_breaks <- seq(from = 0.0, to = x_max, length.out = 10)
+  }
+  if (is.null(x_labs)) {
+    x_labs <- x_breaks
+  }
+
   # Data prep.
-  df <- data %>%
-    dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
-    ) %>%
-    dplyr::filter(arm == which_arm) %>%
-    GetKMPlotFrame(
-      return_surv = return_surv,
-      tau = x_max
-    )
+  df <- OneSamplePlotFrame(
+    data,
+    return_surv = return_surv,
+    status_name = status_name,
+    time_name = time_name
+  )
   
   # Plotting.
   arm <- NULL
@@ -80,22 +77,22 @@ PlotAUC <- function(
     ggplot2::theme_bw() + 
     ggplot2::geom_ribbon(
       data = df %>% dplyr::filter(time <= tau),
-      aes(x = time, ymin = 0, ymax = prob, fill = arm_label),
+      ggplot2::aes(x = time, ymin = 0, ymax = prob, fill = label),
       alpha = 0.5
     ) + 
     ggplot2::theme(
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
       legend.position = legend_pos
     ) + 
     ggplot2::scale_fill_manual(
       name = NULL, 
-      labels = arm_label, 
+      labels = label, 
       values = color
     ) + 
     ggplot2::geom_step(
       data = df, 
-      aes(x = time, y = prob), 
+      ggplot2::aes(x = time, y = prob), 
       size = 1, 
       color = color
     ) +

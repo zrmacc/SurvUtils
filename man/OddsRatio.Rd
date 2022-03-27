@@ -28,4 +28,6 @@ Data.frame
 }
 \description{
 Calculate the odds ratio comparing two treatment arms.
+Input data.frame should contain arm, taking values 0 and 1,
+the event rate, and the standard error.
 }

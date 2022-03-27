@@ -19,6 +19,7 @@ TabulateKM <- function(
 ) {
   
   # Format data.
+  time <- status <- NULL
   df <- data %>%
     dplyr::rename(
       status = {{status_name}},
@@ -48,29 +49,100 @@ TabulateKM <- function(
   # Hazard.
   out$haz <- out$events / out$nar
   out$cum_haz <- cumsum(out$haz)
-  out$var_cum_haz <- cumsum(out$events / out$nar^2)
+  out$cum_haz_var <- cumsum(out$events / out$nar^2)
   
   out$cum_haz_lower <- out$cum_haz * 
-    exp(-z * sqrt(out$var_cum_haz) / out$cum_haz)
+    exp(-z * sqrt(out$cum_haz_var) / out$cum_haz)
   out$cum_haz_upper <- out$cum_haz *
-    exp(+z * sqrt(out$var_cum_haz) / out$cum_haz)
+    exp(+z * sqrt(out$cum_haz_var) / out$cum_haz)
   
   out$cum_haz_lower <- ifelse(out$cum_haz == 0.0, 0, out$cum_haz_lower)
   out$cum_haz_upper <- ifelse(out$cum_haz == 0.0, 0, out$cum_haz_upper)
   
   # Survival.
   out$surv <- cumprod(1 - out$haz)
-  out$var_surv <- (out$surv^2) * out$var_cum_haz
+  out$surv_var <- (out$surv^2) * out$cum_haz_var
   
   out$surv_lower <- out$surv ^ exp(
-    -z * sqrt(out$var_surv) / (out$surv * log(out$surv))
+    -z * sqrt(out$surv_var) / (out$surv * log(out$surv))
   )
   out$surv_upper <- out$surv ^ exp(
-    +z * sqrt(out$var_surv) / (out$surv * log(out$surv))
+    +z * sqrt(out$surv_var) / (out$surv * log(out$surv))
   )
   
   out$surv_lower <- ifelse(out$surv == 1.0, 1, out$surv_lower)
   out$surv_upper <- ifelse(out$surv == 1.0, 1, out$surv_upper)
   
+  out$surv_lower <- ifelse(out$surv == 0.0, 0, out$surv_lower)
+  out$surv_upper <- ifelse(out$surv == 0.0, 0, out$surv_upper)
+  
+  return(out)
+}
+
+
+# -----------------------------------------------------------------------------
+
+
+#' Generate Survival and Hazard Curves
+#' 
+#' Intended for data from a single sample.
+#' 
+#' @param data Data.frame.
+#' @param alpha Type I error.
+#' @param status_name Name of status column.
+#' @param time_name Name of time column.
+#' @importFrom dplyr "%>%"
+#' @importFrom stats stepfun
+#' @export
+#' @return stepfun.
+
+GetCurves <- function(
+    data,
+    alpha = 0.05,
+    status_name = "status",
+    time_name = "time"
+) {
+  
+  # Format data.
+  df <- data %>%
+    dplyr::rename(
+      status = {{status_name}},
+      time = {{time_name}}
+    )
+  
+  # Tabulate Kaplan-Meier.
+  km <- TabulateKM(df, alpha = alpha)
+  
+  # Define step functions.
+  fn <- list()
+  fn$cum_haz <- stepfun(x = km$time, y = c(0, km$cum_haz))
+  fn$cum_haz_var <- stepfun(x = km$time, y = c(0, km$cum_haz_var))
+  fn$cum_haz_lower <- stepfun(x = km$time, y = c(0, km$cum_haz_lower))
+  fn$cum_haz_upper <- stepfun(x = km$time, y = c(0, km$cum_haz_upper))
+  fn$nar <- stepfun(x = km$time, y = c(km$nar, 0))
+  fn$surv <- stepfun(x = km$time, y = c(1, km$surv))
+  fn$surv_var <- stepfun(x = km$time, y = c(0, km$surv_var))
+  fn$surv_lower <- stepfun(x = km$time, y = c(1, km$surv_lower))
+  fn$surv_upper <- stepfun(x = km$time, y = c(1, km$surv_upper))
+  for (i in 1:length(fn)) {
+    f <- fn[[i]]
+    class(f) <- "function"
+    fn[[i]] <- f
+  }
+  
+  # Output.
+  out <- methods::new(
+    "OneSample",
+    CumHaz = fn[["cum_haz"]],
+    CumHazVar = fn[["cum_haz_var"]],
+    CumHazLower = fn[["cum_haz_lower"]],
+    CumHazUpper = fn[["cum_haz_upper"]],
+    NAR = fn[["nar"]],
+    Surv = fn[["surv"]],
+    SurvVar = fn[["surv_var"]],
+    SurvLower = fn[["surv_lower"]],
+    SurvUpper = fn[["surv_upper"]],
+    tmax = max(km$time)
+  )
   return(out)
 }

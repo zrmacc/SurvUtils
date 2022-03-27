@@ -1,5 +1,5 @@
 # Purpose: Functions for hazard ratio analysis.
-# Updated: 2021-05-01
+# Updated: 2022-03-23
 
 #' Calculate Hazard Ratio
 #'
@@ -13,8 +13,7 @@
 #' @param time_name Name of time column.
 #' @return Data.frame.
 #' 
-#' @importFrom dplyr "%>%" rename
-#' @importFrom survival coxph cox.zph Surv
+#' @importFrom dplyr "%>%"
 #' @export
 
 CalcHR <- function(
@@ -33,7 +32,8 @@ CalcHR <- function(
     )
   
   # Fit Cox model.
-  cox_model <- survival::coxph(Surv(time, status) ~ arm, data = df)
+  cox_model <- survival::coxph(
+    survival::Surv(time, status) ~ arm, data = df)
   cox_model_summary <- summary(cox_model, conf.int = 0.95)
   
   # Extract hazard ratio.

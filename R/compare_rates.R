@@ -1,47 +1,5 @@
 # Purpose: Compare survival rates.
-# Updated: 2021-05-01
-
-# -----------------------------------------------------------------------------
-
-#' Get Kaplan-Meier Standard Error Curve
-#' 
-#' Return a function that calculates the standard error of the survival probability
-#' for a single treatment arm.
-#' 
-#' @param data Data.frame.
-#' @param return_surv Logical, TRUE for survival, FALSE for cumulative incidence.
-#' @param status_name Name of status column.
-#' @param time_name Name of time column.
-#' @return Step function.
-#' 
-#' @importFrom dplyr "%>%" rename
-#' @importFrom stats stepfun
-#' @importFrom survival survfit Surv
-#' @export 
-
-GetKMSECurve <- function(
-  data, 
-  return_surv = TRUE, 
-  status_name = "status", 
-  time_name = "time"
-) {
-  
-  # Prepare data.
-  df <- data %>%
-    dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
-    )
-  
-  fit <- survival::survfit(Surv(time, status) ~ 1, data = df)
-  if (return_surv) {
-    g <- stats::stepfun(x = fit$time, y = c(1, fit$std.err))
-  } else {
-    g <- stats::stepfun(x = fit$time, y = c(0, 1 - fit$std.err))
-  }
-  return(g)
-}
-
+# Updated: 2022-03-23
 
 # -----------------------------------------------------------------------------
 # Risk difference, ratio, odds ratio.
@@ -50,6 +8,8 @@ GetKMSECurve <- function(
 #' Calculate Rate Difference.
 #' 
 #' Calculate the rate difference comparing two groups.
+#' Input data.frame should contain arm, taking values 0 and 1,
+#' the event rate, and the standard error.
 #' 
 #' @param rates Data.frame.
 #' @param alpha Type I error.
@@ -58,8 +18,7 @@ GetKMSECurve <- function(
 #' @param se_name Name of standard error column.
 #' @return Data.frame.
 #' 
-#' @importFrom dplyr "%>%" mutate rename summarise
-#' @importFrom stats pnorm qnorm
+#' @importFrom dplyr "%>%" 
 #' @export
 
 RateDiff <- function(
@@ -76,7 +35,7 @@ RateDiff <- function(
   log_se <- NULL
   rate <- NULL
   se <- NULL
-  z <- qnorm(p = 1 - alpha / 2)
+  z <- stats::qnorm(p = 1 - alpha / 2)
   
   # Rate difference calculation.
   rd <- rates %>%
@@ -93,7 +52,10 @@ RateDiff <- function(
     dplyr::mutate(
       lower = est - z * se,
       upper = est + z * se,
-      p = 2 * pnorm(q = abs(est) / se, lower.tail = FALSE)
+      p = 2 * stats::pnorm(
+        q = abs(est) / se,
+        lower.tail = FALSE
+      )
     )
   return(rd)
 }
@@ -102,6 +64,8 @@ RateDiff <- function(
 #' Calculate Rate Ratio
 #' 
 #' Calculate the rate difference comparing two groups.
+#' Input data.frame should contain arm, taking values 0 and 1,
+#' the event rate, and the standard error.
 #' 
 #' @param rates Data.frame.
 #' @param alpha Type I error.
@@ -110,8 +74,7 @@ RateDiff <- function(
 #' @param se_name Name of standard error column.
 #' @return Data.frame
 #' 
-#' @importFrom dplyr "%>%" mutate select summarise
-#' @importFrom stats pnorm qnorm
+#' @importFrom dplyr "%>%"
 #' @export
 
 RateRatio <- function(
@@ -128,7 +91,7 @@ RateRatio <- function(
   log_se <- NULL
   rate <- NULL
   se <- NULL
-  z <- qnorm(p = 1 - alpha / 2)
+  z <- stats::qnorm(p = 1 - alpha / 2)
   
   # Rate ratio calculation.
   rr <- rates %>%
@@ -146,11 +109,12 @@ RateRatio <- function(
       lower = est * exp(-z * log_se),
       upper = est * exp(+z * log_se),
       se = est * log_se,
-      p = 2 * pnorm(q = abs(log(est)) / log_se, lower.tail = FALSE)
+      p = 2 * stats::pnorm(
+        q = abs(log(est)) / log_se,
+        lower.tail = FALSE
+      )
     ) %>% 
-    dplyr::select(
-      - log_se
-    )
+    dplyr::select(-log_se)
   return(rr)
 }
 
@@ -158,6 +122,8 @@ RateRatio <- function(
 #' Calculate Rate Odds Ratio
 #' 
 #' Calculate the odds ratio comparing two treatment arms.
+#' Input data.frame should contain arm, taking values 0 and 1,
+#' the event rate, and the standard error.
 #' 
 #' @param rates Data.frame.
 #' @param alpha Type I error.
@@ -165,8 +131,7 @@ RateRatio <- function(
 #' @param rate_name Name of rate column.
 #' @param se_name Name of standard error column.
 #' @return Data.frame
-#' @importFrom dplyr "%>%" mutate select summarise
-#' @importFrom stats pnorm qnorm
+#' @importFrom dplyr "%>%"
 #' @export
 
 OddsRatio <- function(
@@ -183,7 +148,7 @@ OddsRatio <- function(
   log_se <- NULL
   rate <- NULL
   se <- NULL
-  z <- qnorm(p = 1 - alpha / 2)
+  z <- stats::qnorm(p = 1 - alpha / 2)
   
   # Odds ratio calculation.
   or <- rates %>% 
@@ -204,11 +169,12 @@ OddsRatio <- function(
       lower = est * exp(-z * log_se),
       upper = est * exp(+z * log_se),
       se = est * log_se,
-      p = 2 * pnorm(q = abs(log(est)) / log_se, lower.tail = FALSE)
+      p = 2 * stats::pnorm(
+        q = abs(log(est)) / log_se,
+        lower.tail = FALSE
+      )
     ) %>% 
-    dplyr::select(
-      - log_se
-    )
+    dplyr::select(-log_se)
   return(or)
 }
 
@@ -230,11 +196,10 @@ OddsRatio <- function(
 #' @param time_name Name of time column.
 #' @return Data.frame.
 #' 
-#' @importFrom dplyr "%>%" filter
-#' @importFrom methods new
+#' @importFrom dplyr "%>%"
 #' @export
 
-CompareKMRates <- function(
+CompareRates <- function(
   data,
   alpha = 0.05,
   arm_name = "arm",
@@ -261,25 +226,27 @@ CompareKMRates <- function(
   arm <- NULL
   km0 <- df %>% 
     dplyr::filter(arm == 0) %>%
-    GetKMCurve(return_surv = return_surv)
+    GetCurves()
   km1 <- df %>% 
     dplyr::filter(arm == 1) %>%
-    GetKMCurve(return_surv = return_surv)
-  
-  # Get variance calculations.
-  se0 <- df %>% 
-    dplyr::filter(arm == 0) %>%
-    GetKMSECurve(return_surv = return_surv)
-  se1 <- df %>% 
-    dplyr::filter(arm == 1) %>%
-    GetKMSECurve(return_surv = return_surv)
+    GetCurves()
   
   # Calculate per-arm statistics.
+  p0 <- km0@Surv(tau)
+  p1 <- km1@Surv(tau)
+  se0 <- sqrt(km0@SurvVar(tau))
+  se1 <- sqrt(km1@SurvVar(tau))
+  
+  if (!return_surv) {
+    p0 <- 1 - p0
+    p1 <- 1 - p1
+  }
+  
   rates <- data.frame(
     arm = c(0, 1),
     tau = tau,
-    rate = c(km0(tau), km1(tau)),
-    se = c(se0(tau), se1(tau))
+    rate = c(p0, p1),
+    se = c(se0, se1)
   )
   
   # Compare arms.
@@ -289,11 +256,9 @@ CompareKMRates <- function(
   
   # Output.
   out <- methods::new(
-    "SurvSummary",
+    "TwoSample",
     Marginal = rates,
     Contrasts = rbind(rd, rr, or)
   )
   return(out)
 }
-
-

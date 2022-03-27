@@ -1,7 +1,7 @@
 # Purpose: Functions for plotting Kaplan-Meier curves.
 # Updated: 2021-05-01
 
-#' Prepare Kaplan-Meier Plotting Frame
+#' One Sample Plotting Frame
 #' 
 #' @param data Data.frame
 #' @param eval_points Number of points at which to evaluate the curve.
@@ -10,10 +10,10 @@
 #' @param tau Trunction time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-#' 
-#' @importFrom dplyr "%>%" rename
+#' @importFrom dplyr "%>%"
+#' @noRd
 
-GetKMPlotFrame <- function(
+OneSamplePlotFrame <- function(
   data,
   eval_points = 1000,
   return_surv = TRUE, 
@@ -28,7 +28,7 @@ GetKMPlotFrame <- function(
       status = {{status_name}},
       time = {{time_name}}
     )
-  g <- GetKMCurve(df, return_surv)
+  km <- GetCurves(df)
   
   # Time grid.
   if (is.null(tau)) {
@@ -37,15 +37,21 @@ GetKMPlotFrame <- function(
   times <- seq(from = 0, to = tau, length.out = eval_points)
   out <- data.frame(
     time = times,
-    prob = g(times)
+    prob = km@Surv(times),
+    lower = km@SurvLower(times),
+    upper = km@SurvUpper(times)
   )
+  if (!return_surv) {
+    out$prob <- 1 - out$prob
+  }
   return(out)
 }
 
 
 # -----------------------------------------------------------------------------
 
-#' Get 2 Arm Plotting Frame
+
+#' Two Sample Plotting Frame
 #' 
 #' @param data Data.frame.
 #' @param arm_name Name of arm column.
@@ -55,10 +61,10 @@ GetKMPlotFrame <- function(
 #' @param tau Trunction time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-#' 
-#' @importFrom dplyr "%>%" filter mutate rename
+#' @importFrom dplyr "%>%"
+#' @noRd
 
-Get2ArmPlotFrame <- function(
+TwoSamplePlotFrame <- function(
   data,
   tau,
   arm_name = "arm",
@@ -80,7 +86,7 @@ Get2ArmPlotFrame <- function(
   arm <- NULL
   df0 <- data %>%
     dplyr::filter(arm == 0) %>%
-    GetKMPlotFrame(
+    OneSamplePlotFrame(
       eval_points = eval_points,
       return_surv = return_surv,
       tau = tau
@@ -89,7 +95,7 @@ Get2ArmPlotFrame <- function(
   
   df1 <- data %>%
     dplyr::filter(arm == 1) %>%
-    GetKMPlotFrame(
+    OneSamplePlotFrame(
       eval_points = eval_points,
       return_surv = return_surv,
       tau = tau
@@ -104,35 +110,81 @@ Get2ArmPlotFrame <- function(
 
 # -----------------------------------------------------------------------------
 
-#' Plotting Frame for Parametric Models
+#' Plotting Frame for One Sample Parametric Model
 #'
-#' @param para_model Fitted parametric model.
+#' @param fit Object of class "fit" from \code{Temporal}.
 #' @param tau Upper limit of observation period.
 #' @param eval_points Number of points at which to evaluate the curve.
 #' @param return_surv Logical, TRUE for survival, FALSE for cumulative incidence.
-#' @return Data.frame containing `time`, `surv`, `arm`.
+#' @return Data.frame.
+#' @noRd
 
-Get2ArmParaPlotFrame <- function(
-  para_model, 
-  tau,
-  eval_points = 1000,
-  return_surv = TRUE
+OneSampleModelFrame <- function(
+    fit, 
+    tau,
+    eval_points = 1000,
+    return_surv = TRUE
 ) {
+  
+  if (!methods::is(fit, "fit")) {
+    stop("Parametric model should be an object of class fit from Temporal.")
+  }
   
   # Time grid.
   times <- seq(from = 0, to = tau, length.out = eval_points)
   
   # Survival functions.
-  g0 <- para_model@Model0@S
-  g1 <- para_model@Model1@S
+  Surv <- fit@S
   
   # Plotting frame
-  df0 <- cbind("time" = times, "prob" = g0(times), "arm" = 0)
-  df1 <- cbind("time" = times, "prob" = g1(times), "arm" = 1)
-  df <- data.frame(rbind(df1, df0))
-  df$arm <- factor(df$arm, levels = c(0, 1), ordered = TRUE)
+  out <- data.frame(
+    time = times,
+    prob = Surv(times)
+  )
+  
   if (!return_surv) {
-    df$prob <- 1 - df$prob
+    out$prob <- 1 - out$prob
   }
-  return(df)
+  
+  return(out)
+}
+
+# -----------------------------------------------------------------------------
+
+#' Plotting Frame for Parametric Models
+#'
+#' @param contrast Object of class "contrast" from \code{Temporal}.
+#' @param tau Upper limit of observation period.
+#' @param eval_points Number of points at which to evaluate the curve.
+#' @param return_surv Logical, TRUE for survival, FALSE for cumulative incidence.
+#' @return Data.frame.
+#' @noRd
+
+TwoSampleModelFrame <- function(
+  contrast, 
+  tau,
+  eval_points = 1000,
+  return_surv = TRUE
+) {
+  
+  # Arm 0.
+  df0 <- OneSampleModelFrame(
+    fit = contrast@Model0, 
+    tau = tau,
+    eval_points = eval_points,
+    return_surv = return_surv
+  ) %>% dplyr::mutate(arm = 0)
+  
+  # Arm 1.
+  df1 <- OneSampleModelFrame(
+    fit = contrast@Model1, 
+    tau = tau,
+    eval_points = eval_points,
+    return_surv = return_surv
+  ) %>% dplyr::mutate(arm = 1)
+  
+  # Plotting frame
+  out <- data.frame(rbind(df1, df0))
+  out$arm <- factor(out$arm, levels = c(0, 1), ordered = TRUE)
+  return(out)
 }

@@ -1,64 +1,161 @@
 # Purpose: Functions for plotting numbers at risk.
-# Updated: 2021-05-01
+# Updated: 2022-03-27
+
 
 # -----------------------------------------------------------------------------
-# Numbers at risk.
-# -----------------------------------------------------------------------------
 
-#' Get Number at Risk Curve
+#' One Sample NAR Frame
 #' 
-#' Return a function that calculates the number at risk for a single treatment
-#' arm.
+#' @param data Data.frame.
+#' @param x_breaks X-axis breaks.
+#' @param status_name Name of status column.
+#' @param time_name Name of time column.
+#' @return Data.frame.
+#' @noRd
+
+OneSampleNARs <- function(
+    data,
+    x_breaks,
+    status_name = "status",
+    time_name = "time"
+) {
+  km <- GetCurves(
+    data,
+    status_name = status_name,
+    time_name = time_name
+  )
+  out <- data.frame(
+    time = x_breaks,
+    nar = km@NAR(x_breaks)
+  )
+  return(out)
+}
+
+
+# -----------------------------------------------------------------------------
+# One sample.
+# -----------------------------------------------------------------------------
+
+
+#' Plot Two Sample Numbers at Risk
 #' 
 #' @param data Data.frame.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Step function.
-#' 
-#' @importFrom dplyr "%>%" rename
-#' @importFrom stats stepfun
-#' @importFrom survival survfit Surv
-#' @export 
+#' @param x_breaks X-axis breaks.
+#' @param x_labs X-axis labels.
+#' @param x_max X-axis upper limit.
+#' @param x_name X-axis name.
+#' @param y_lab Y-axis label.
+#' @return ggplot.
+#' @importFrom dplyr "%>%"
+#' @export
 
-GetNARCurve <- function(
-  data, 
-  status_name = "status", 
-  time_name = "time"
+PlotOneSampleNARs <- function(
+    data,
+    status_name = "status",
+    time_name = "time",
+    x_breaks = NULL,
+    x_labs = NULL,
+    x_max = NULL,
+    x_name = NULL,
+    y_lab = "NAR"
 ) {
   
-  # Prepare data.
-  df <- data %>%
+  # Defaults.
+  if (is.null(x_max)) {
+    x_max <- max(data %>% dplyr::select(dplyr::all_of(time_name)))
+  }
+  if (is.null(x_breaks)) {
+    x_breaks <- seq(from = 0.0, to = x_max, length.out = 10)
+  }
+  if (is.null(x_labs)) {
+    x_labs <- x_breaks
+  }
+  
+  # Data prep.
+  data <- data %>%
     dplyr::rename(
       status = {{status_name}},
       time = {{time_name}}
     )
   
-  fit <- survival::survfit(Surv(time, status) ~ 1, data = df)
-  g <- stats::stepfun(x = fit$time, y = c(nrow(df), fit$n.risk))
-  return(g)
+  df <- OneSampleNARs(data, x_breaks)
+  df$arm <- 0
+  df$arm <- factor(
+    df$arm,
+    levels = 0,
+    labels = y_lab
+  )
+  
+  # Plotting.
+  arm <- NULL
+  nar <- NULL
+  time <- NULL
+  q <- ggplot2::ggplot(data = df) +
+    ggplot2::theme_bw() + 
+    ggplot2::theme(
+      panel.border = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank()
+    ) +
+    ggplot2::geom_text(
+      ggplot2::aes(x = time, y = arm, label = nar)
+    ) +
+    ggplot2::scale_x_continuous(
+      breaks = x_breaks,
+      name = x_name,
+      labels = x_labs,
+      limits = c(0, x_max)
+    ) + 
+    ggplot2::scale_y_discrete(
+      name = NULL
+    )
+  return(q)
 }
 
 
-#' Get Numbers at Risk
-#' 
-#' Numbers at risk for competing risks data.
+# -----------------------------------------------------------------------------
+# Two sample.
+# -----------------------------------------------------------------------------
+
+#' Plot Two Sample Numbers at Risk
 #' 
 #' @param data Data.frame.
-#' @param x_breaks Time points at which to determine the NARs.
 #' @param arm_name Name of arm column.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame containing `time`, `nar_ctrl`, `nar_trt`.
-#' 
-#' @importFrom dplyr "%>%" filter rename
+#' @param x_breaks X-axis breaks.
+#' @param x_labs X-axis labels.
+#' @param x_max X-axis upper limit.
+#' @param x_name X-axis name.
+#' @param y_labs Y-axis labels.
+#' @return ggplot.
+#' @importFrom dplyr "%>%"
+#' @export
 
-GetKMNARs <- function(
-  data, 
-  x_breaks, 
+PlotTwoSampleNARs <- function(
+  data,
   arm_name = "arm",
   status_name = "status",
-  time_name = "time"
+  time_name = "time",
+  x_breaks = NULL,
+  x_labs = NULL,
+  x_max = NULL,
+  x_name = NULL,
+  y_labs = c("Ctrl", "Trt")
 ) {
+  
+  # Defaults.
+  if (is.null(x_max)) {
+    x_max <- max(data %>% dplyr::select(dplyr::all_of(time_name)))
+  }
+  if (is.null(x_breaks)) {
+    x_breaks <- seq(from = 0.0, to = x_max, length.out = 10)
+  }
+  if (is.null(x_labs)) {
+    x_labs <- x_breaks
+  }
   
   # Data prep.
   data <- data %>%
@@ -68,86 +165,21 @@ GetKMNARs <- function(
       time = {{time_name}}
     )
   
-  # NAR functions.
-  arm <- NULL
-  g0 <- data %>% 
+  df0 <- data %>%
     dplyr::filter(arm == 0) %>%
-    GetNARCurve()
-  g1 <- data %>%
+    OneSampleNARs(x_breaks) %>%
+    dplyr::mutate(arm = 0)
+  df1 <- data %>%
     dplyr::filter(arm == 1) %>%
-    GetNARCurve()
-  
-  # Output.
-  out <- data.frame(
-    time = x_breaks,
-    nar_ctrl = g0(x_breaks),
-    nar_trt = g1(x_breaks)
+    OneSampleNARs(x_breaks) %>%
+    dplyr::mutate(arm = 1)
+  df <- rbind(df0, df1)
+  df$arm <- factor(
+    df$arm,
+    levels = c(0, 1),
+    labels = y_labs,
+    ordered = TRUE
   )
-  return(out)
-}
-
-
-# -----------------------------------------------------------------------------
-# Plot numbers at risk.
-# -----------------------------------------------------------------------------
-
-#' Plot Numbers at Risk
-#' 
-#' @param data Data.frame.
-#' @param x_breaks X-axis breaks.
-#' @param arm_name Name of arm column.
-#' @param status_name Name of status column.
-#' @param time_name Name of time column.
-#' @param x_labs X-axis labels.
-#' @param x_max X-axis upper limit.
-#' @param x_name X-axis name.
-#' @param y_labs Y-axis labels.
-#' @return ggplot.
-#' 
-#' @importFrom dplyr "%>%" rename mutate
-#' @importFrom ggplot2 aes geom_text ggplot scale_x_continuous 
-#'   scale_y_discrete theme theme_bw 
-#' @importFrom tidyr pivot_longer
-#' @export
-
-PlotNARs <- function(
-  data,
-  x_breaks,
-  arm_name = "arm",
-  status_name = "status",
-  time_name = "time",
-  x_labs = NULL,
-  x_max = NULL,
-  x_name = NULL,
-  y_labs = c("Ctrl", "Trt")
-) {
-  
-  # Defaults.
-  if (is.null(x_labs)) {
-    x_labs = x_breaks
-  }
-  if (is.null(x_max)) {
-    x_max = max(x_breaks)
-  }
-  
-  # Data prep.
-  nar_ctrl <- NULL
-  nar_trt <- NULL
-  df <- data %>%
-    dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
-    ) %>%
-    GetKMNARs(x_breaks) %>%
-    tidyr::pivot_longer(
-      cols = c(nar_ctrl, nar_trt),
-      names_to = "arm",
-      values_to = "nar"
-    ) %>%
-    dplyr::mutate(
-      arm = factor(arm, c("nar_ctrl", "nar_trt"), y_labs)
-    )
   
   # Plotting.
   arm <- NULL
@@ -156,12 +188,12 @@ PlotNARs <- function(
   q <- ggplot2::ggplot(data = df) +
     ggplot2::theme_bw() + 
     ggplot2::theme(
-      panel.border = element_blank(),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank()
+      panel.border = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank()
     ) +
     ggplot2::geom_text(
-      aes(x = time, y = arm, label = nar)
+      ggplot2::aes(x = time, y = arm, label = nar)
     ) +
     ggplot2::scale_x_continuous(
       breaks = x_breaks,
@@ -170,8 +202,7 @@ PlotNARs <- function(
       limits = c(0, x_max)
     ) + 
     ggplot2::scale_y_discrete(
-      name = NULL,
-      labels = y_labs
+      name = NULL
     )
   return(q)
 }

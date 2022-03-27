@@ -1,6 +1,6 @@
 Package: SurvUtils
 Title: Utility Functions for Survival Analysis
-Version: 0.0.3
+Version: 0.0.4
 Authors@R: 
     person(given = "Zachary",
            family = "McCaw",
@@ -17,5 +17,8 @@ Imports:
   stats,
   survival,
   tidyr
+Suggests: 
+  testthat (>= 3.0.0),
+  withr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
