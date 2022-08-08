@@ -1,5 +1,5 @@
 # Purpose: One-sample analysis.
-# Updated: 2022-03-27
+# Updated: 2022-08-07
 
 # -----------------------------------------------------------------------------
 
@@ -44,6 +44,7 @@ OneSampleRates <- function(
 
 
 # -----------------------------------------------------------------------------
+
 
 #' Extract Percentile
 #'
@@ -103,5 +104,76 @@ OneSamplePercentiles <- function(
     return(sub)
   })
   out <- do.call(rbind, results)
+  return(out)
+}
+
+
+# -----------------------------------------------------------------------------
+
+
+#' One Sample RMST
+#' 
+#' @param data Data.frame.
+#' @param tau Truncation time.
+#' @param alpha Type I error.
+#' @param status_name Name of status column.
+#' @param time_name Name of time column.
+#' @return Data.frame.
+#' @importFrom dplyr "%>%"
+#' @export
+OneSampleRMST <- function(
+    data,
+    tau = NULL,
+    alpha = 0.05,
+    status_name = "status",
+    time_name = "time"
+) {
+  
+  # Format data.
+  df <- data %>%
+    dplyr::rename(
+      status = {{status_name}},
+      time = {{time_name}}
+    )
+  if (is.null(tau)) {
+    tau <- max(df$time)
+  }
+  
+  # Table.
+  tab <- TabulateKM(df, alpha = alpha)
+  
+  haz <- time <- NULL
+  tab <- tab %>%
+    dplyr::filter(haz > 0) %>%
+    dplyr::filter(time <= tau)
+  n_times <- nrow(tab)
+  
+  delta_t <- diff(c(0, tab$time))
+  surv <- c(1, tab$surv[1:(n_times - 1)])
+  
+  auc <- sum(surv * delta_t)
+  
+  # Variance calculation.
+  # Mu_{\tau}(t) = \int_{t}^{\tau}S(u)du.
+  # The variance is the sum over *event* times <= tau of
+  # mu_t^2 * dN_t / Y_t where mu_t is defined as above,
+  # dN_t is the number of events and Y_t is the number at risk.
+  
+  event_times <- tab$time
+  delta_t <- diff(c(event_times, tau))
+  surv <- tab$surv
+  mu_t <- rev(cumsum(rev(delta_t * surv)))
+  
+  var <- sum(mu_t^2 * tab$haz / tab$nar)
+  
+  # Output.
+  z <- stats::qnorm(p = 1 - alpha / 2)
+  out <- data.frame(
+    tau = tau,
+    auc = auc,
+    se = sqrt(var)
+  )
+  out$lower <- out$auc - z * out$se
+  out$upper <- out$auc + z * out$se
   return(out)
 }

@@ -1,7 +1,7 @@
 # Functions for Survival Analysis
 
 Zachary R. McCaw <br>
-Updated: 2022-03-27
+Updated: 2022-08-07
 
 
 
@@ -29,23 +29,27 @@ head(data)
 ```
 
 ```
-##   idx covariates true_event_rate frailty event_time censor_time       time
-## 1   1          1               1       1 0.01594840   2.4993847 0.01594840
-## 2   2          1               1       1 1.14069889   5.1421315 1.14069889
-## 3   3          1               1       1 0.07534741   2.5234219 0.07534741
-## 4   4          1               1       1 0.71062536   0.6288996 0.62889955
-## 5   5          1               1       1 1.86053700   0.8134442 0.81344416
-## 6   6          1               1       1 1.86211073  13.2284343 1.86211073
+##   idx covariates true_event_rate frailty event_time censor_time      time
+## 1   1          1               1       1  0.2161507    2.158832 0.2161507
+## 2   2          1               1       1  0.7138938    1.885513 0.7138938
+## 3   3          1               1       1  0.7785634    2.626152 0.7785634
+## 4   4          1               1       1  2.3714006    1.384429 1.3844286
+## 5   5          1               1       1  1.5034824    1.708774 1.5034824
+## 6   6          1               1       1  2.3258316    1.479482 1.4794816
 ##   status
 ## 1      1
 ## 2      1
 ## 3      1
 ## 4      0
-## 5      0
-## 6      1
+## 5      1
+## 6      0
 ```
 
-# Tabulate Kaplan-Meier
+# Estimation
+
+## One Sample
+
+### Kaplan-Meier
 
 * Tabulates the cumulative hazard and survival functions, along with variance estimates and confidence intervals.
 
@@ -57,16 +61,115 @@ head(km_tab)
 
 ```
 ## # A tibble: 6 × 13
-##      time censor events   nar    haz cum_haz cum_haz_var cum_haz_lower
-##     <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>         <dbl>
-## 1 0            0      0   100 0       0         0              0      
-## 2 0.00308      0      1   100 0.01    0.01      0.0001         0.00141
-## 3 0.00387      1      0    99 0       0.01      0.0001         0.00141
-## 4 0.0121       0      1    98 0.0102  0.0202    0.000204       0.00505
-## 5 0.0159       0      1    97 0.0103  0.0305    0.000310       0.00984
-## 6 0.0218       0      1    96 0.0104  0.0409    0.000419       0.0154 
-## # … with 5 more variables: cum_haz_upper <dbl>, surv <dbl>, surv_var <dbl>,
-## #   surv_lower <dbl>, surv_upper <dbl>
+##       time censor events   nar    haz cum_haz cum_haz_var cum_ha…¹ cum_h…²  surv
+##      <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>    <dbl>   <dbl> <dbl>
+## 1 0             0      0   100 0       0         0         0        0      1    
+## 2 0.000862      0      1   100 0.01    0.01      0.0001    0.00141  0.0710 0.99 
+## 3 0.0331        0      1    99 0.0101  0.0201    0.000202  0.00503  0.0804 0.98 
+## 4 0.0396        1      0    98 0       0.0201    0.000202  0.00503  0.0804 0.98 
+## 5 0.0629        0      1    97 0.0103  0.0304    0.000308  0.00981  0.0943 0.970
+## 6 0.0633        0      1    96 0.0104  0.0408    0.000417  0.0153   0.109  0.960
+## # … with 3 more variables: surv_var <dbl>, surv_lower <dbl>, surv_upper <dbl>,
+## #   and abbreviated variable names ¹​cum_haz_lower, ²​cum_haz_upper
+## # ℹ Use `colnames()` to see all variable names
+```
+
+### Event Rate, Percentile, Restricted Mean Survival
+
+* Calculate the event rate at a point in time.
+
+
+```r
+# Rate.
+SurvUtils::OneSampleRates(data, tau = 1.0)
+```
+
+```
+##   tau      rate         se    lower     upper
+## 1   1 0.4269862 0.05213734 0.323885 0.5260347
+```
+
+
+```r
+# Percentile: median.
+SurvUtils::OneSamplePercentiles(data, p = 0.5)
+```
+
+```
+##   prob      time     lower    upper
+## 1  0.5 0.8498057 0.5703519 1.031601
+```
+
+
+```r
+# RMST.
+SurvUtils::OneSampleRMST(data, tau = 1.0)
+```
+
+```
+##   tau       auc         se     lower     upper
+## 1   1 0.6733513 0.03558384 0.6036082 0.7430943
+```
+
+## Two Sample
+
+### Generate Data
+
+```r
+data0 <- SurvUtils::GenData(
+  base_event_rate = 1.0,
+  censoring_rate = 0.25,
+  n = 100,
+  tau = 4.0
+)
+data0$arm <- 0
+
+data1 <- SurvUtils::GenData(
+  base_event_rate = 0.5,
+  censoring_rate = 0.25,
+  n = 100,
+  tau = 4.0
+)
+data1$arm <- 1
+data <- rbind(data0, data1)
+```
+
+### Compare Rates
+
+```r
+SurvUtils::CompareRates(data, tau = 1.0)
+```
+
+```
+## Marginal Statistics:
+##   arm tau  rate     se
+## 1   0   1 0.349 0.0498
+## 2   1   1 0.592 0.0511
+## 
+## 
+## Contrasts:
+##   stat   est     se lower upper        p
+## 1   rd 0.243 0.0714 0.103 0.383 0.000657
+## 2   rr 1.700 0.2830 1.220 2.360 0.001530
+## 3   or 2.710 0.8260 1.490 4.920 0.001080
+```
+
+
+```r
+SurvUtils::CompareRMSTs(data, tau = 1.0)
+```
+
+```
+## Marginal Statistics:
+##   tau   auc     se lower upper arm
+## 1   1 0.604 0.0368 0.532 0.676   0
+## 2   1 0.763 0.0319 0.700 0.826   1
+## 
+## 
+## Contrasts:
+##   stat   est     se  lower upper       p
+## 1   rd 0.159 0.0487 0.0632 0.254 0.00112
+## 2   rr 1.260 0.0932 1.0900 1.460 0.00160
 ```
 
 # Plotting
@@ -101,7 +204,7 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-11-1.png" style="display: block; margin: auto;" />
 
 ### AUC
 
@@ -120,7 +223,7 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
 
 ## Two Sample
 
@@ -139,4 +242,4 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
