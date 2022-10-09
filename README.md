@@ -1,8 +1,7 @@
 # Functions for Survival Analysis
 
 Zachary R. McCaw <br>
-Updated: 2022-08-07
-
+Updated: 2022-10-09
 
 
 
@@ -30,19 +29,19 @@ head(data)
 
 ```
 ##   idx covariates true_event_rate frailty event_time censor_time      time
-## 1   1          1               1       1  0.2161507    2.158832 0.2161507
-## 2   2          1               1       1  0.7138938    1.885513 0.7138938
-## 3   3          1               1       1  0.7785634    2.626152 0.7785634
-## 4   4          1               1       1  2.3714006    1.384429 1.3844286
-## 5   5          1               1       1  1.5034824    1.708774 1.5034824
-## 6   6          1               1       1  2.3258316    1.479482 1.4794816
+## 1   1          1               1       1  1.3381785   0.1358120 0.1358120
+## 2   2          1               1       1  1.3415662   6.2325090 1.3415662
+## 3   3          1               1       1  0.2917765  14.2090314 0.2917765
+## 4   4          1               1       1  0.5734920   0.2855799 0.2855799
+## 5   5          1               1       1  0.8485916   6.1223100 0.8485916
+## 6   6          1               1       1  0.2768621   3.3442509 0.2768621
 ##   status
-## 1      1
+## 1      0
 ## 2      1
 ## 3      1
 ## 4      0
 ## 5      1
-## 6      0
+## 6      1
 ```
 
 # Estimation
@@ -61,17 +60,16 @@ head(km_tab)
 
 ```
 ## # A tibble: 6 × 13
-##       time censor events   nar    haz cum_haz cum_haz_var cum_ha…¹ cum_h…²  surv
-##      <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>    <dbl>   <dbl> <dbl>
-## 1 0             0      0   100 0       0         0         0        0      1    
-## 2 0.000862      0      1   100 0.01    0.01      0.0001    0.00141  0.0710 0.99 
-## 3 0.0331        0      1    99 0.0101  0.0201    0.000202  0.00503  0.0804 0.98 
-## 4 0.0396        1      0    98 0       0.0201    0.000202  0.00503  0.0804 0.98 
-## 5 0.0629        0      1    97 0.0103  0.0304    0.000308  0.00981  0.0943 0.970
-## 6 0.0633        0      1    96 0.0104  0.0408    0.000417  0.0153   0.109  0.960
+##      time censor events   nar    haz cum_haz cum_haz_var cum_haz…¹ cum_h…²  surv
+##     <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>     <dbl>   <dbl> <dbl>
+## 1 0            0      0   100 0       0         0          0        0       1   
+## 2 0.00355      0      1   100 0.01    0.01      0.0001     0.00141  0.0710  0.99
+## 3 0.0221       0      1    99 0.0101  0.0201    0.000202   0.00503  0.0804  0.98
+## 4 0.0329       0      1    98 0.0102  0.0303    0.000306   0.00977  0.0940  0.97
+## 5 0.0393       0      1    97 0.0103  0.0406    0.000412   0.0152   0.108   0.96
+## 6 0.0403       0      1    96 0.0104  0.0510    0.000521   0.0212   0.123   0.95
 ## # … with 3 more variables: surv_var <dbl>, surv_lower <dbl>, surv_upper <dbl>,
 ## #   and abbreviated variable names ¹​cum_haz_lower, ²​cum_haz_upper
-## # ℹ Use `colnames()` to see all variable names
 ```
 
 ### Event Rate, Percentile, Restricted Mean Survival
@@ -85,8 +83,8 @@ SurvUtils::OneSampleRates(data, tau = 1.0)
 ```
 
 ```
-##   tau      rate         se    lower     upper
-## 1   1 0.4269862 0.05213734 0.323885 0.5260347
+##   tau      rate        se     lower     upper
+## 1   1 0.3572734 0.0500913 0.2607411 0.4547153
 ```
 
 
@@ -96,8 +94,8 @@ SurvUtils::OneSamplePercentiles(data, p = 0.5)
 ```
 
 ```
-##   prob      time     lower    upper
-## 1  0.5 0.8498057 0.5703519 1.031601
+##   prob      time     lower     upper
+## 1  0.5 0.6022287 0.4283836 0.8523196
 ```
 
 
@@ -107,8 +105,8 @@ SurvUtils::OneSampleRMST(data, tau = 1.0)
 ```
 
 ```
-##   tau       auc         se     lower     upper
-## 1   1 0.6733513 0.03558384 0.6036082 0.7430943
+##   tau       auc         se     lower    upper
+## 1   1 0.5962124 0.03759794 0.5225218 0.669903
 ```
 
 ## Two Sample
@@ -143,15 +141,15 @@ SurvUtils::CompareRates(data, tau = 1.0)
 ```
 ## Marginal Statistics:
 ##   arm tau  rate     se
-## 1   0   1 0.349 0.0498
-## 2   1   1 0.592 0.0511
+## 1   0   1 0.408 0.0514
+## 2   1   1 0.591 0.0531
 ## 
 ## 
 ## Contrasts:
-##   stat   est     se lower upper        p
-## 1   rd 0.243 0.0714 0.103 0.383 0.000657
-## 2   rr 1.700 0.2830 1.220 2.360 0.001530
-## 3   or 2.710 0.8260 1.490 4.920 0.001080
+##   stat   est     se lower upper      p
+## 1   rd 0.184 0.0739 0.039 0.329 0.0129
+## 2   rr 1.450 0.2250 1.070 1.970 0.0162
+## 3   or 2.100 0.6440 1.150 3.830 0.0151
 ```
 
 
@@ -162,14 +160,14 @@ SurvUtils::CompareRMSTs(data, tau = 1.0)
 ```
 ## Marginal Statistics:
 ##   tau   auc     se lower upper arm
-## 1   1 0.604 0.0368 0.532 0.676   0
-## 2   1 0.763 0.0319 0.700 0.826   1
+## 1   1 0.618 0.0381 0.543 0.693   0
+## 2   1 0.752 0.0347 0.684 0.820   1
 ## 
 ## 
 ## Contrasts:
 ##   stat   est     se  lower upper       p
-## 1   rd 0.159 0.0487 0.0632 0.254 0.00112
-## 2   rr 1.260 0.0932 1.0900 1.460 0.00160
+## 1   rd 0.134 0.0515 0.0333 0.235 0.00916
+## 2   rr 1.220 0.0937 1.0500 1.420 0.01060
 ```
 
 # Plotting

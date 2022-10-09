@@ -146,3 +146,44 @@ GetCurves <- function(
   )
   return(out)
 }
+
+
+# -----------------------------------------------------------------------------
+
+#' Kaplan-Meier Influence
+#' 
+#' Calculate Kaplan-Meier influence function for each observation.
+#' 
+#' @param data Data.frame.
+#' @param tau Truncation time at which to calculate the influence.
+#' @param status_name Name of status column.
+#' @param time_name Name of time column.
+#' @return Data.frame.
+#' @importFrom dplyr "%>%"
+#' @export
+
+KMInfluence <- function(
+    data,
+    tau,
+    status_name = "status",
+    time_name = "time"
+) {
+  
+  # Format data.
+  time <- status <- NULL
+  df <- data %>%
+    dplyr::rename(
+      status = {{status_name}},
+      time = {{time_name}}
+    )
+  df$idx <- seq_len(nrow(df))
+  
+  influence <- InfluenceKM(
+    idx = df$idx,
+    status = df$status,
+    time = df$time,
+    trunc_time = tau
+  )
+  return(as.numeric(influence))
+}
+
