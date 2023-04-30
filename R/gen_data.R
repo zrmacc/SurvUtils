@@ -1,5 +1,5 @@
-#' Purpose: Simulate Data.
-#' Updated: 2022-03-19
+# Purpose: Simulate Data.
+# Updated: 2022-03-19
 
 #' Generate Data
 #' 

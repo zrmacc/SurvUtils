@@ -43,6 +43,10 @@ OneSamplePlotFrame <- function(
   )
   if (!return_surv) {
     out$prob <- 1 - out$prob
+    lower <- pmax(1 - out$upper, 0)
+    upper <- pmin(1 - out$lower, 1)
+    out$lower <- lower
+    out$upper <- upper
   }
   return(out)
 }

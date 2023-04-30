@@ -2,9 +2,7 @@
 % Please edit documentation in R/gen_data.R
 \name{GenData}
 \alias{GenData}
-\title{Purpose: Simulate Data.
-Updated: 2022-03-19
-Generate Data}
+\title{Generate Data}
 \usage{
 GenData(
   base_event_rate = 1,
@@ -38,7 +36,5 @@ GenData(
 Data.frame.
 }
 \description{
-Purpose: Simulate Data.
-Updated: 2022-03-19
 Generate Data
 }

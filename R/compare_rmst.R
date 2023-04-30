@@ -1,7 +1,6 @@
 # Purpose: Compare RMSTs.
 # Updated: 2022-08-07
 
-
 #' Compare RMSTs
 #' 
 #' Compare the restricted mean survival times of two treatment arms.
