@@ -62,7 +62,7 @@ PlotOneSampleAUC <- function(
   }
 
   # Data prep.
-  df <- OneSamplePlotFrame(
+  df <- OneSampleSurvFrame(
     data,
     return_surv = return_surv,
     status_name = status_name,

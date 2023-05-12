@@ -67,7 +67,7 @@ PlotOneSampleNARs <- function(
     x_max <- max(data %>% dplyr::select(dplyr::all_of(time_name)))
   }
   if (is.null(x_breaks)) {
-    x_breaks <- seq(from = 0.0, to = x_max, length.out = 10)
+    x_breaks <- round(seq(from = 0.0, to = x_max, length.out = 10))
   }
   if (is.null(x_labs)) {
     x_labs <- x_breaks
@@ -151,7 +151,7 @@ PlotTwoSampleNARs <- function(
     x_max <- max(data %>% dplyr::select(dplyr::all_of(time_name)))
   }
   if (is.null(x_breaks)) {
-    x_breaks <- seq(from = 0.0, to = x_max, length.out = 10)
+    x_breaks <- round(seq(from = 0.0, to = x_max, length.out = 10))
   }
   if (is.null(x_labs)) {
     x_labs <- x_breaks

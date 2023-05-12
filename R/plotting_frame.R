@@ -1,7 +1,7 @@
 # Purpose: Functions for plotting Kaplan-Meier curves.
 # Updated: 2021-05-01
 
-#' One Sample Plotting Frame
+#' One Sample Survival Plotting Frame
 #' 
 #' @param data Data.frame
 #' @param eval_points Number of points at which to evaluate the curve.
@@ -13,7 +13,7 @@
 #' @importFrom dplyr "%>%"
 #' @noRd
 
-OneSamplePlotFrame <- function(
+OneSampleSurvFrame <- function(
   data,
   eval_points = 1000,
   return_surv = TRUE, 
@@ -55,7 +55,7 @@ OneSamplePlotFrame <- function(
 # -----------------------------------------------------------------------------
 
 
-#' Two Sample Plotting Frame
+#' Two Sample Survival Plotting Frame
 #' 
 #' @param data Data.frame.
 #' @param arm_name Name of arm column.
@@ -68,7 +68,7 @@ OneSamplePlotFrame <- function(
 #' @importFrom dplyr "%>%"
 #' @noRd
 
-TwoSamplePlotFrame <- function(
+TwoSampleSurvFrame <- function(
   data,
   tau,
   arm_name = "arm",
@@ -90,7 +90,7 @@ TwoSamplePlotFrame <- function(
   arm <- NULL
   df0 <- data %>%
     dplyr::filter(arm == 0) %>%
-    OneSamplePlotFrame(
+    OneSampleSurvFrame(
       eval_points = eval_points,
       return_surv = return_surv,
       tau = tau
@@ -99,7 +99,7 @@ TwoSamplePlotFrame <- function(
   
   df1 <- data %>%
     dplyr::filter(arm == 1) %>%
-    OneSamplePlotFrame(
+    OneSampleSurvFrame(
       eval_points = eval_points,
       return_surv = return_surv,
       tau = tau
@@ -189,6 +189,105 @@ TwoSampleModelFrame <- function(
   
   # Plotting frame
   out <- data.frame(rbind(df1, df0))
+  out$arm <- factor(out$arm, levels = c(0, 1), ordered = TRUE)
+  return(out)
+}
+
+
+# -----------------------------------------------------------------------------
+
+#' One Sample Cumulative Hazard Frame
+#' 
+#' @param data Data.frame
+#' @param eval_points Number of points at which to evaluate the curve.
+#' @param status_name Name of status column.
+#' @param tau Trunction time.
+#' @param time_name Name of time column.
+#' @return Data.frame.
+#' @importFrom dplyr "%>%"
+#' @noRd
+
+OneSampleCHFrame <- function(
+    data,
+    eval_points = 1000,
+    status_name = "status", 
+    tau = NULL,
+    time_name = "time"
+) {
+  
+  # Prepare data.
+  df <- data %>%
+    dplyr::rename(
+      status = {{status_name}},
+      time = {{time_name}}
+    )
+  ch <- GetCurves(df)
+  
+  # Time grid.
+  if (is.null(tau)) {
+    tau <- max(df$time)
+  }
+  times <- seq(from = 0, to = tau, length.out = eval_points)
+  out <- data.frame(
+    time = times,
+    cumhaz = ch@CumHaz(times),
+    lower = ch@CumHazLower(times),
+    upper = ch@CumHazUpper(times)
+  )
+  return(out)
+}
+
+
+# -----------------------------------------------------------------------------
+
+#' Two Sample Cumulative Hazard Frame
+#' 
+#' @param data Data.frame.
+#' @param arm_name Name of arm column.
+#' @param eval_points Number of points at which to evaluate the curve.
+#' @param status_name Name of status column.
+#' @param tau Trunction time.
+#' @param time_name Name of time column.
+#' @return Data.frame.
+#' @importFrom dplyr "%>%"
+#' @noRd
+
+TwoSampleCHFrame <- function(
+    data,
+    tau,
+    arm_name = "arm",
+    eval_points = 1000,
+    status_name = "status", 
+    time_name = "time"
+) {
+  
+  # Data.frame.
+  data <- data %>%
+    dplyr::rename(
+      arm = {{arm_name}},
+      status = {{status_name}},
+      time = {{time_name}}
+    )
+  
+  # Prepare data.
+  arm <- NULL
+  df0 <- data %>%
+    dplyr::filter(arm == 0) %>%
+    OneSampleCHFrame(
+      eval_points = eval_points,
+      tau = tau
+    ) %>%
+    dplyr::mutate(arm = 0)
+  
+  df1 <- data %>%
+    dplyr::filter(arm == 1) %>%
+    OneSampleCHFrame(
+      eval_points = eval_points,
+      tau = tau
+    ) %>%
+    dplyr::mutate(arm = 1)
+  
+  out <- rbind(df0, df1)
   out$arm <- factor(out$arm, levels = c(0, 1), ordered = TRUE)
   return(out)
 }
