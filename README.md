@@ -1,7 +1,7 @@
 # Functions for Survival Analysis
 
 Zachary R. McCaw <br>
-Updated: 2022-10-09
+Updated: 2023-06-09
 
 
 ```r
@@ -9,6 +9,13 @@ suppressPackageStartupMessages({
   library(dplyr)
   library(SurvUtils)
 })
+```
+
+# Installation
+
+
+```r
+devtools::install_github(repo = "zrmacc/SurvUtils")
 ```
 
 # Data Generation
@@ -27,17 +34,17 @@ head(data)
 ```
 
 ```
-##   idx covariates true_event_rate frailty event_time censor_time      time
-## 1   1          1               1       1  1.9405879   6.1577900 1.9405879
-## 2   2          1               1       1  0.4403402   4.4846209 0.4403402
-## 3   3          1               1       1  0.7509104   0.5108565 0.5108565
-## 4   4          1               1       1  0.1005392   1.0944711 0.1005392
-## 5   5          1               1       1  0.3138042   0.6715436 0.3138042
-## 6   6          1               1       1  0.6166296  12.2708344 0.6166296
+##   idx covariates true_event_rate frailty event_time censor_time       time
+## 1   1          1               1       1 1.25882533   1.7383592 1.25882533
+## 2   2          1               1       1 3.77287448   0.2994819 0.29948189
+## 3   3          1               1       1 0.86277663   9.9509909 0.86277663
+## 4   4          1               1       1 0.05351559   7.3693073 0.05351559
+## 5   5          1               1       1 0.33578540   1.1028062 0.33578540
+## 6   6          1               1       1 0.74077214  16.8707338 0.74077214
 ##   status
 ## 1      1
-## 2      1
-## 3      0
+## 2      0
+## 3      1
 ## 4      1
 ## 5      1
 ## 6      1
@@ -59,16 +66,16 @@ head(km_tab)
 
 ```
 ## # A tibble: 6 × 13
-##     time censor events   nar    haz cum_haz cum_haz_var cum_haz_…¹ cum_h…²  surv
-##    <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>      <dbl>   <dbl> <dbl>
-## 1 0           0      0   100 0       0         0           0        0      1    
-## 2 0.0442      0      1   100 0.01    0.01      0.0001      0.00141  0.0710 0.99 
-## 3 0.0583      1      0    99 0       0.01      0.0001      0.00141  0.0710 0.99 
-## 4 0.0693      0      1    98 0.0102  0.0202    0.000204    0.00505  0.0808 0.980
-## 5 0.0723      1      0    97 0       0.0202    0.000204    0.00505  0.0808 0.980
-## 6 0.0907      1      0    96 0       0.0202    0.000204    0.00505  0.0808 0.980
-## # … with 3 more variables: surv_var <dbl>, surv_lower <dbl>, surv_upper <dbl>,
-## #   and abbreviated variable names ¹​cum_haz_lower, ²​cum_haz_upper
+##      time censor events   nar    haz cum_haz cum_haz_var cum_haz_lower
+##     <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>         <dbl>
+## 1 0            0      0   100 0       0         0              0      
+## 2 0.00619      1      0   100 0       0         0              0      
+## 3 0.0103       0      1    99 0.0101  0.0101    0.000102       0.00142
+## 4 0.0132       0      1    98 0.0102  0.0203    0.000206       0.00508
+## 5 0.0317       1      0    97 0       0.0203    0.000206       0.00508
+## 6 0.0331       0      1    96 0.0104  0.0307    0.000315       0.00991
+## # ℹ 5 more variables: cum_haz_upper <dbl>, surv <dbl>, surv_var <dbl>,
+## #   surv_lower <dbl>, surv_upper <dbl>
 ```
 
 #### Influence function
@@ -105,7 +112,7 @@ print(round(inf_se, digits = 4))
 ```
 
 ```
-## [1] 0.0165
+## [1] 0.0163
 ```
 
 ### Event Rate, Percentile, Restricted Mean Survival
@@ -119,8 +126,8 @@ SurvUtils::OneSampleRates(data, tau = 1.0)
 ```
 
 ```
-##   tau      rate         se    lower    upper
-## 1   1 0.3889673 0.01654321 0.356504 0.421273
+##   tau      rate         se     lower     upper
+## 1   1 0.3559764 0.01628601 0.3241441 0.3879014
 ```
 
 
@@ -131,7 +138,7 @@ SurvUtils::OneSamplePercentiles(data, p = 0.5)
 
 ```
 ##   prob     time     lower     upper
-## 1  0.5 0.724318 0.6666131 0.8084555
+## 1  0.5 0.678371 0.6172791 0.7609683
 ```
 
 
@@ -141,8 +148,8 @@ SurvUtils::OneSampleRMST(data, tau = 1.0)
 ```
 
 ```
-##   tau       auc         se     lower    upper
-## 1   1 0.6469971 0.01167413 0.6241162 0.669878
+##   tau       auc         se     lower     upper
+## 1   1 0.6248738 0.01173439 0.6018748 0.6478728
 ```
 
 ## Two Sample
@@ -177,15 +184,15 @@ SurvUtils::CompareRates(data, tau = 1.0)
 ```
 ## Marginal Statistics:
 ##   arm tau  rate     se
-## 1   0   1 0.431 0.0523
-## 2   1   1 0.579 0.0522
+## 1   0   1 0.366 0.0508
+## 2   1   1 0.635 0.0508
 ## 
 ## 
 ## Contrasts:
-##   stat   est     se   lower upper      p
-## 1   rd 0.148 0.0739 0.00325 0.293 0.0451
-## 2   rr 1.340 0.2030 0.99900 1.810 0.0507
-## 3   or 1.820 0.5490 1.00000 3.280 0.0483
+##   stat   est     se lower upper        p
+## 1   rd 0.268 0.0718 0.128 0.409 0.000186
+## 2   rr 1.730 0.2770 1.270 2.370 0.000592
+## 3   or 3.010 0.9300 1.640 5.510 0.000377
 ```
 
 
@@ -196,14 +203,14 @@ SurvUtils::CompareRMSTs(data, tau = 1.0)
 ```
 ## Marginal Statistics:
 ##   tau   auc     se lower upper arm
-## 1   1 0.688 0.0352 0.619 0.757   0
-## 2   1 0.727 0.0331 0.662 0.791   1
+## 1   1 0.582 0.0369  0.51 0.654   0
+## 2   1 0.760 0.0303  0.70 0.819   1
 ## 
 ## 
 ## Contrasts:
-##   stat    est     se   lower upper     p
-## 1   rd 0.0382 0.0483 -0.0565 0.133 0.430
-## 2   rr 1.0600 0.0723  0.9230 1.210 0.431
+##   stat   est     se  lower upper        p
+## 1   rd 0.178 0.0477 0.0845 0.272 0.000190
+## 2   rr 1.310 0.0978 1.1300 1.510 0.000361
 ```
 
 # Plotting
@@ -226,7 +233,7 @@ data <- rbind(arm1, arm0)
 ```r
 x_breaks <- seq(from = 0.0, to = 4.0, by = 0.50)
 data0 <- data %>% dplyr::filter(arm == 0)
-fit0 <- Temporal::FitParaSurv(data0)
+fit0 <- Temporal::FitParaSurv(data0)  # Optional parametric fit. 
 q_km <- SurvUtils::PlotOneSampleKM(data0, fit = fit0, x_breaks = x_breaks, x_max = 4)
 q_nar <- SurvUtils::PlotOneSampleNARs(data0, x_breaks = x_breaks, x_max = 4)
 cowplot::plot_grid(
@@ -238,7 +245,7 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
 
 ### AUC
 
@@ -257,14 +264,14 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
 
 ## Two Sample
 
 
 ```r
 x_breaks <- seq(from = 0.0, to = 4.0, by = 0.50)
-contrast <- Temporal::CompParaSurv(data)
+contrast <- Temporal::CompParaSurv(data)  # Optional parametric fit. 
 q_km <- SurvUtils::PlotTwoSampleKM(data, contrast = contrast, x_breaks = x_breaks, x_max = 4)
 q_nar <- SurvUtils::PlotTwoSampleNARs(data, x_breaks = x_breaks, x_max = 4)
 cowplot::plot_grid(
@@ -276,4 +283,4 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" />
