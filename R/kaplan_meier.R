@@ -119,7 +119,7 @@ GetCurves <- function(
   fn$cum_haz_var <- stepfun(x = km$time, y = c(0, km$cum_haz_var))
   fn$cum_haz_lower <- stepfun(x = km$time, y = c(0, km$cum_haz_lower))
   fn$cum_haz_upper <- stepfun(x = km$time, y = c(0, km$cum_haz_upper))
-  fn$nar <- stepfun(x = km$time, y = c(km$nar, 0))
+  fn$nar <- stepfun(x = km$time, y = c(km$nar, 0), right = TRUE)
   fn$surv <- stepfun(x = km$time, y = c(1, km$surv))
   fn$surv_var <- stepfun(x = km$time, y = c(0, km$surv_var))
   fn$surv_lower <- stepfun(x = km$time, y = c(1, km$surv_lower))
