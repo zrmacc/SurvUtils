@@ -1,6 +1,7 @@
 #' Purpose: Kaplan-Meier estimator.
 #' Updated: 2022-03-19
 
+
 #' Tabulate Kaplan-Meier 
 #' 
 #' @param data Data.frame.
@@ -10,7 +11,6 @@
 #' @return Data.frame.
 #' @importFrom dplyr "%>%"
 #' @export
-
 TabulateKM <- function(
     data,
     status_name = "status",

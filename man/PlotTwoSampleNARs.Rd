@@ -7,6 +7,7 @@
 PlotTwoSampleNARs(
   data,
   arm_name = "arm",
+  specified_nars = NULL,
   status_name = "status",
   time_name = "time",
   x_breaks = NULL,
@@ -20,6 +21,9 @@ PlotTwoSampleNARs(
 \item{data}{Data.frame.}
 
 \item{arm_name}{Name of arm column.}
+
+\item{specified_nars}{Optional data.frame of specified NARs. Should include
+"arm", "time", and "nar". Overrides \code{data} if present.}
 
 \item{status_name}{Name of status column.}
 

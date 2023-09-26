@@ -12,7 +12,6 @@
 #' @return Data.frame.
 #' @importFrom dplyr "%>%"
 #' @noRd
-
 OneSampleSurvFrame <- function(
   data,
   eval_points = 1000,
@@ -67,7 +66,6 @@ OneSampleSurvFrame <- function(
 #' @return Data.frame.
 #' @importFrom dplyr "%>%"
 #' @noRd
-
 TwoSampleSurvFrame <- function(
   data,
   tau,

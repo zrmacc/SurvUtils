@@ -6,6 +6,7 @@
 \usage{
 PlotOneSampleKM(
   data,
+  ci = TRUE,
   color = "#0F9D58",
   fit = NULL,
   plot_surv = TRUE,
@@ -23,6 +24,8 @@ PlotOneSampleKM(
 }
 \arguments{
 \item{data}{Data.frame containing time and status.}
+
+\item{ci}{Include confidence interval?}
 
 \item{color}{Color for KM curve.}
 

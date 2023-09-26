@@ -8,6 +8,7 @@
 #' Plot One Sample Survival
 #'
 #' @param data Data.frame containing time and status.
+#' @param ci Include confidence interval?
 #' @param color Color for KM curve.
 #' @param fit Parametric fit from the Temporal package.
 #' @param plot_surv Logical, TRUE for survival curves, FALSE for cumulative incidence.
@@ -25,9 +26,9 @@
 #' 
 #' @importFrom dplyr "%>%"
 #' @export
-
 PlotOneSampleKM <- function(
     data,
+    ci = TRUE,
     color = "#0F9D58",
     fit = NULL,
     plot_surv = TRUE,
@@ -82,13 +83,20 @@ PlotOneSampleKM <- function(
       panel.grid.major = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
       legend.position = "top"
-    ) + 
-    ggplot2::geom_ribbon(
+    )
+  
+  # Confidence interval.
+  if (ci) {
+    q <- q + ggplot2::geom_ribbon(
       data = df_km,
       ggplot2::aes(x = time, ymin = lower, ymax = upper),
       fill = color,
       alpha = 0.2
-    ) + 
+    )
+  }
+  
+  # Step function.
+  q <- q +
     ggplot2::geom_step(
       data = df_km, 
       ggplot2::aes(x = time, y = prob),
@@ -146,14 +154,15 @@ PlotOneSampleKM <- function(
 #'
 #' @param data Data.frame containing time, status, and arm.
 #' @param arm_name Name of arm column.
-#' @param status_name Name of status column.
-#' @param time_name Name of time column.
+#' @param cis Include confidence intervals?
 #' @param color_labs Color labels.
 #' @param color_ctrl Color for control arm.
 #' @param color_trt Color for treatment arm.
 #' @param contrast Fitted parametric contrast from the Temporal package.
 #' @param plot_surv Logical, TRUE for survival curves, FALSE for cumulative incidence.
+#' @param status_name Name of status column.
 #' @param tau Truncation time.
+#' @param time_name Name of time column.
 #' @param title Plot title.
 #' @param x_breaks X-axis breaks.
 #' @param x_labs X-axis labels.
@@ -165,10 +174,10 @@ PlotOneSampleKM <- function(
 #' 
 #' @importFrom dplyr "%>%"
 #' @export
-
 PlotTwoSampleKM <- function(
   data,
   arm_name = "arm",
+  cis = TRUE,
   color_labs = c("Ctrl", "Trt"),
   color_ctrl = "#EFC000FF",
   color_trt = "#6385B8",
@@ -226,12 +235,19 @@ PlotTwoSampleKM <- function(
       panel.grid.major = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
       legend.position = "top"
-    ) + 
-    ggplot2::geom_ribbon(
+    ) 
+  
+  # Confidence interval.
+  if (cis) {
+    q <- q + ggplot2::geom_ribbon(
       data = df_km,
       ggplot2::aes(x = time, ymin = lower, ymax = upper, fill = arm),
       alpha = 0.2
-    ) + 
+    )
+  }
+  
+  # Step function.
+  q <- q + 
     ggplot2::geom_step(
       data = df_km, 
       ggplot2::aes(x = time, y = prob, color = arm),

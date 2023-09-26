@@ -1,7 +1,72 @@
 # Purpose: C-statistic calculation.
-# Updated: 2022-09-24
+# Updated: 2023-09-26
 
-#' Calculate Concordance
+
+#' Calculate Unweighted Concordance
+#'
+#' @param data Data frame including risk, status, time.
+#' @param pseudo_counts Include pseudo counts?
+#' @param risk_name Name of the risk column.
+#' @param status_name Name of status column.
+#' @param tau Truncation time.
+#' @param time_name Name of time column.
+#' @return Data.frame.
+#' @export
+Cstat <- function(
+    data,
+    pseudo_counts = TRUE,
+    risk_name = "risk",
+    status_name = "status",
+    tau = NULL,
+    time_name = "time"
+) {
+  
+  # Truncation time.
+  if (is.null(tau)) {
+    tau <- max(data$time[data$status == 1])
+  }
+  
+  # Formatting.
+  risk <- status <- time <- NULL
+  df <- data %>%
+    dplyr::rename(
+      risk = {{risk_name}},
+      status = {{status_name}},
+      time = {{time_name}}
+    ) %>%
+    dplyr::select(risk, status, time)
+  
+  # Sort by time.
+  df <- df[order(df$time), ]
+  
+  # Pseudo counts.
+  if (pseudo_counts) {
+    num <- 0.5
+    denom <- 1.0
+  } else {
+    num <- 0.0
+    denom <- 0.0
+  }
+  
+  # Calculation.
+  time <- df$time
+  status <- df$status
+  risk <- df$risk
+  
+  n <- nrow(df)
+  for (i in 1:n) {
+    if (status[i] != 1) {next}
+    for (j in i:n) {
+      num <- num + 1 * (time[i] < time[j]) * (risk[i] > risk[j]) * (time[i] < tau)
+      denom <- denom + 1 * (time[i] < time[j]) * (time[i] < tau)
+    }
+  }
+  out <- num / denom
+  return(out)
+}
+
+
+#' Calculate Weighted Concordance
 #'
 #' Calculate the C-statistic in the presence of censoring using the method of:
 #' <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3079915/>.
@@ -18,7 +83,7 @@
 #' 
 #' @importFrom dplyr "%>%"
 #' @export
-Cstat <- function(
+WeightedCstat <- function(
   train_data,
   test_data,
   risk_name = "risk",
@@ -26,6 +91,8 @@ Cstat <- function(
   tau = NULL,
   time_name = "time"
 ) {
+  
+  # Truncation time.
   if (is.null(tau)) {
     tau <- stats::quantile(train_data$time, 0.95)
   }

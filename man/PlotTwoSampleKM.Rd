@@ -7,6 +7,7 @@
 PlotTwoSampleKM(
   data,
   arm_name = "arm",
+  cis = TRUE,
   color_labs = c("Ctrl", "Trt"),
   color_ctrl = "#EFC000FF",
   color_trt = "#6385B8",
@@ -28,6 +29,8 @@ PlotTwoSampleKM(
 \item{data}{Data.frame containing time, status, and arm.}
 
 \item{arm_name}{Name of arm column.}
+
+\item{cis}{Include confidence intervals?}
 
 \item{color_labs}{Color labels.}
 

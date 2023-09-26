@@ -6,6 +6,7 @@
 \usage{
 PlotOneSampleNARs(
   data,
+  specified_nars = NULL,
   status_name = "status",
   time_name = "time",
   x_breaks = NULL,
@@ -17,6 +18,9 @@ PlotOneSampleNARs(
 }
 \arguments{
 \item{data}{Data.frame.}
+
+\item{specified_nars}{Optional data.frame of specified NARs. Should include
+"time" and "nar". Overrides \code{data} if present.}
 
 \item{status_name}{Name of status column.}
 

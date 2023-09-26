@@ -2,11 +2,11 @@
 % Please edit documentation in R/cstat.R
 \name{Cstat}
 \alias{Cstat}
-\title{Calculate Concordance}
+\title{Calculate Unweighted Concordance}
 \usage{
 Cstat(
-  train_data,
-  test_data,
+  data,
+  pseudo_counts = TRUE,
   risk_name = "risk",
   status_name = "status",
   tau = NULL,
@@ -14,11 +14,9 @@ Cstat(
 )
 }
 \arguments{
-\item{train_data}{Data for estimating the censoring distribution. Should
-include status and time.}
+\item{data}{Data frame including risk, status, time.}
 
-\item{test_data}{Data for evaluating the risk score. Should include risk,
-stats, and time.}
+\item{pseudo_counts}{Include pseudo counts?}
 
 \item{risk_name}{Name of the risk column.}
 
@@ -32,6 +30,5 @@ stats, and time.}
 Data.frame.
 }
 \description{
-Calculate the C-statistic in the presence of censoring using the method of:
-\url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3079915/}.
+Calculate Unweighted Concordance
 }

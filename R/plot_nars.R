@@ -12,7 +12,6 @@
 #' @param time_name Name of time column.
 #' @return Data.frame.
 #' @noRd
-
 OneSampleNARs <- function(
     data,
     x_breaks,
@@ -40,6 +39,8 @@ OneSampleNARs <- function(
 #' Plot Two Sample Numbers at Risk
 #' 
 #' @param data Data.frame.
+#' @param specified_nars Optional data.frame of specified NARs. Should include
+#'   "time" and "nar". Overrides `data` if present.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @param x_breaks X-axis breaks.
@@ -50,9 +51,9 @@ OneSampleNARs <- function(
 #' @return ggplot.
 #' @importFrom dplyr "%>%"
 #' @export
-
 PlotOneSampleNARs <- function(
     data,
+    specified_nars = NULL,
     status_name = "status",
     time_name = "time",
     x_breaks = NULL,
@@ -74,13 +75,22 @@ PlotOneSampleNARs <- function(
   }
   
   # Data prep.
-  data <- data %>%
-    dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+  if (is.null(specified_nars)) {
+    data <- data %>%
+      dplyr::rename(
+        status = {{status_name}},
+        time = {{time_name}}
+      )
+    df <- OneSampleNARs(data, x_breaks)
+  } else {
+    stopifnot(
+      "specified_nars must contain time and nar." = 
+        all(c("time", "nar") %in% colnames(specified_nars))
     )
+    df <- specified_nars
+  }
   
-  df <- OneSampleNARs(data, x_breaks)
+  # Placeholder for arm.
   df$arm <- 0
   df$arm <- factor(
     df$arm,
@@ -123,6 +133,8 @@ PlotOneSampleNARs <- function(
 #' 
 #' @param data Data.frame.
 #' @param arm_name Name of arm column.
+#' @param specified_nars Optional data.frame of specified NARs. Should include
+#'   "arm", "time", and "nar". Overrides `data` if present.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @param x_breaks X-axis breaks.
@@ -133,10 +145,10 @@ PlotOneSampleNARs <- function(
 #' @return ggplot.
 #' @importFrom dplyr "%>%"
 #' @export
-
 PlotTwoSampleNARs <- function(
   data,
   arm_name = "arm",
+  specified_nars = NULL,
   status_name = "status",
   time_name = "time",
   x_breaks = NULL,
@@ -158,22 +170,33 @@ PlotTwoSampleNARs <- function(
   }
   
   # Data prep.
-  data <- data %>%
-    dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+  if (is.null(specified_nars)) {
+    data <- data %>%
+      dplyr::rename(
+        arm = {{arm_name}},
+        status = {{status_name}},
+        time = {{time_name}}
+      )
+    df0 <- data %>%
+      dplyr::filter(arm == 0) %>%
+      OneSampleNARs(x_breaks) %>%
+      dplyr::mutate(arm = 0)
+    df1 <- data %>%
+      dplyr::filter(arm == 1) %>%
+      OneSampleNARs(x_breaks) %>%
+      dplyr::mutate(arm = 1)
+    df <- rbind(df0, df1)
+  } else {
+    df <- specified_nars
+    stopifnot(
+      "specified_nars must contain arm, time, and nar." = 
+        all(c("arm", "time", "nar") %in% colnames(specified_nars))
     )
-  
-  df0 <- data %>%
-    dplyr::filter(arm == 0) %>%
-    OneSampleNARs(x_breaks) %>%
-    dplyr::mutate(arm = 0)
-  df1 <- data %>%
-    dplyr::filter(arm == 1) %>%
-    OneSampleNARs(x_breaks) %>%
-    dplyr::mutate(arm = 1)
-  df <- rbind(df0, df1)
+    stopifnot(
+      "The levels of arm in specified_nars must be c(0, 1)." = 
+        all(sort(unique(specified_nars$arm)) == c(0, 1))
+    )
+  }
   df$arm <- factor(
     df$arm,
     levels = c(0, 1),

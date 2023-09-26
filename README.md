@@ -1,7 +1,9 @@
 # Functions for Survival Analysis
 
 Zachary R. McCaw <br>
-Updated: 2023-06-09
+Updated: 2023-09-26
+
+
 
 
 ```r
@@ -35,15 +37,15 @@ head(data)
 
 ```
 ##   idx covariates true_event_rate frailty event_time censor_time       time
-## 1   1          1               1       1 1.25882533   1.7383592 1.25882533
-## 2   2          1               1       1 3.77287448   0.2994819 0.29948189
-## 3   3          1               1       1 0.86277663   9.9509909 0.86277663
-## 4   4          1               1       1 0.05351559   7.3693073 0.05351559
-## 5   5          1               1       1 0.33578540   1.1028062 0.33578540
-## 6   6          1               1       1 0.74077214  16.8707338 0.74077214
+## 1   1          1               1       1 0.15032178   0.8281659 0.15032178
+## 2   2          1               1       1 0.08965564  10.5189404 0.08965564
+## 3   3          1               1       1 0.14340693   2.5481145 0.14340693
+## 4   4          1               1       1 0.71691154   7.6195282 0.71691154
+## 5   5          1               1       1 3.02119978   5.6989281 3.02119978
+## 6   6          1               1       1 0.55638190   3.0264381 0.55638190
 ##   status
 ## 1      1
-## 2      0
+## 2      1
 ## 3      1
 ## 4      1
 ## 5      1
@@ -66,14 +68,14 @@ head(km_tab)
 
 ```
 ## # A tibble: 6 × 13
-##      time censor events   nar    haz cum_haz cum_haz_var cum_haz_lower
-##     <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>         <dbl>
-## 1 0            0      0   100 0       0         0              0      
-## 2 0.00619      1      0   100 0       0         0              0      
-## 3 0.0103       0      1    99 0.0101  0.0101    0.000102       0.00142
-## 4 0.0132       0      1    98 0.0102  0.0203    0.000206       0.00508
-## 5 0.0317       1      0    97 0       0.0203    0.000206       0.00508
-## 6 0.0331       0      1    96 0.0104  0.0307    0.000315       0.00991
+##     time censor events   nar    haz cum_haz cum_haz_var cum_haz_lower
+##    <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>         <dbl>
+## 1 0           0      0   100 0       0         0              0      
+## 2 0.0253      0      1   100 0.01    0.01      0.0001         0.00141
+## 3 0.0454      0      1    99 0.0101  0.0201    0.000202       0.00503
+## 4 0.0512      0      1    98 0.0102  0.0303    0.000306       0.00977
+## 5 0.0859      0      1    97 0.0103  0.0406    0.000412       0.0152 
+## 6 0.0897      0      1    96 0.0104  0.0510    0.000521       0.0212 
 ## # ℹ 5 more variables: cum_haz_upper <dbl>, surv <dbl>, surv_var <dbl>,
 ## #   surv_lower <dbl>, surv_upper <dbl>
 ```
@@ -127,7 +129,7 @@ SurvUtils::OneSampleRates(data, tau = 1.0)
 
 ```
 ##   tau      rate         se     lower     upper
-## 1   1 0.3559764 0.01628601 0.3241441 0.3879014
+## 1   1 0.3591066 0.01630011 0.3272344 0.3910474
 ```
 
 
@@ -138,7 +140,7 @@ SurvUtils::OneSamplePercentiles(data, p = 0.5)
 
 ```
 ##   prob     time     lower     upper
-## 1  0.5 0.678371 0.6172791 0.7609683
+## 1  0.5 0.671038 0.6238443 0.7326507
 ```
 
 
@@ -149,7 +151,7 @@ SurvUtils::OneSampleRMST(data, tau = 1.0)
 
 ```
 ##   tau       auc         se     lower     upper
-## 1   1 0.6248738 0.01173439 0.6018748 0.6478728
+## 1   1 0.6249941 0.01167324 0.6021149 0.6478732
 ```
 
 ## Two Sample
@@ -184,17 +186,18 @@ SurvUtils::CompareRates(data, tau = 1.0)
 ```
 ## Marginal Statistics:
 ##   arm tau  rate     se
-## 1   0   1 0.366 0.0508
-## 2   1   1 0.635 0.0508
+## 1   0   1 0.401 0.0522
+## 2   1   1 0.558 0.0527
 ## 
 ## 
 ## Contrasts:
-##   stat   est     se lower upper        p
-## 1   rd 0.268 0.0718 0.128 0.409 0.000186
-## 2   rr 1.730 0.2770 1.270 2.370 0.000592
-## 3   or 3.010 0.9300 1.640 5.510 0.000377
+##   stat   est     se  lower upper      p
+## 1   rd 0.158 0.0742 0.0125 0.303 0.0333
+## 2   rr 1.390 0.2240 1.0200 1.910 0.0389
+## 3   or 1.890 0.5770 1.0400 3.440 0.0364
 ```
 
+### Compare RMSTs
 
 ```r
 SurvUtils::CompareRMSTs(data, tau = 1.0)
@@ -203,14 +206,48 @@ SurvUtils::CompareRMSTs(data, tau = 1.0)
 ```
 ## Marginal Statistics:
 ##   tau   auc     se lower upper arm
-## 1   1 0.582 0.0369  0.51 0.654   0
-## 2   1 0.760 0.0303  0.70 0.819   1
+## 1   1 0.625 0.0377 0.551 0.699   0
+## 2   1 0.729 0.0352 0.660 0.798   1
 ## 
 ## 
 ## Contrasts:
-##   stat   est     se  lower upper        p
-## 1   rd 0.178 0.0477 0.0845 0.272 0.000190
-## 2   rr 1.310 0.0978 1.1300 1.510 0.000361
+##   stat   est     se   lower upper      p
+## 1   rd 0.104 0.0516 0.00254 0.205 0.0445
+## 2   rr 1.170 0.0901 1.00000 1.360 0.0471
+```
+
+### Compare Cox Models
+Compare the predictive performance of Cox models based on different sets of covariates with respect to their c-statistics on held-out data via k-fold cross validation.
+
+```r
+# Simulate data.
+n <- 1000
+x1 <- rnorm(n)
+x2 <- rnorm(n)
+data <- SurvUtils::GenData(
+  covariates = cbind(x1, x2),
+  beta_event = c(1.0, -1.0)
+)
+
+# Evaluate.
+eval <- CompreCoxCstat(
+  status = data$status,
+  time = data$time,
+  x1 = data %>% dplyr::select(x1, x2),
+  x2 = data %>% dplyr::select(x1)
+)
+
+head(round(eval, digits = 3))
+```
+
+```
+##   fold cstat1 cstat2  diff ratio
+## 1    1  0.772  0.641 0.130 1.203
+## 2    2  0.796  0.707 0.089 1.126
+## 3    3  0.826  0.748 0.079 1.105
+## 4    4  0.776  0.640 0.136 1.213
+## 5    5  0.723  0.602 0.120 1.200
+## 6    6  0.803  0.744 0.059 1.079
 ```
 
 # Plotting
@@ -245,7 +282,7 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
 
 ### AUC
 
@@ -264,7 +301,7 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" />
 
 ## Two Sample
 
@@ -283,4 +320,4 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" />

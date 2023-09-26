@@ -1,5 +1,5 @@
 # Purpose: Package documentation
-# Updated: 2022-10-09
+# Updated: 2023-09-26
 
 
 ## usethis namespace: start
@@ -9,11 +9,11 @@
 NULL
 
 
-#' SurvUtils
-#' 
-#' Utility Functions for Survival Analysis
-#'
-#' @author Zachary R. McCaw
-#' @docType package
-#' @name SurvUtils
+#' @keywords internal
+"_PACKAGE"
+
+
+## usethis namespace: start
+#' @importFrom dplyr %>%
+## usethis namespace: end
 NULL

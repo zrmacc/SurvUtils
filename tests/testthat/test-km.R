@@ -28,16 +28,16 @@ test_that("Test Kaplan-Meier estimator.", {
 
 
 test_that("Influence function calculation.", {
-  
+
   withr::local_seed(101)
   n <- 1000
   data <- GenData(n = n)
   km <- GetCurves(data)
-  
+
   tau <- 1.0
   ref_var <- km@SurvVar(tau)
   influence <- KMInfluence(data, tau = tau)
   inf_var <- sum(influence^2) / (n^2)
   expect_equal(n * ref_var, n * inf_var, tolerance = 0.05)
-  
+
 })
