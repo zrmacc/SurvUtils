@@ -12,22 +12,21 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // InfluenceKM
-SEXP InfluenceKM(const arma::colvec idx, const arma::colvec status, const arma::colvec time, const float trunc_time);
-RcppExport SEXP _SurvUtils_InfluenceKM(SEXP idxSEXP, SEXP statusSEXP, SEXP timeSEXP, SEXP trunc_timeSEXP) {
+SEXP InfluenceKM(const arma::colvec status, const arma::colvec time, const float trunc_time);
+RcppExport SEXP _SurvUtils_InfluenceKM(SEXP statusSEXP, SEXP timeSEXP, SEXP trunc_timeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec >::type idx(idxSEXP);
     Rcpp::traits::input_parameter< const arma::colvec >::type status(statusSEXP);
     Rcpp::traits::input_parameter< const arma::colvec >::type time(timeSEXP);
     Rcpp::traits::input_parameter< const float >::type trunc_time(trunc_timeSEXP);
-    rcpp_result_gen = Rcpp::wrap(InfluenceKM(idx, status, time, trunc_time));
+    rcpp_result_gen = Rcpp::wrap(InfluenceKM(status, time, trunc_time));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_SurvUtils_InfluenceKM", (DL_FUNC) &_SurvUtils_InfluenceKM, 4},
+    {"_SurvUtils_InfluenceKM", (DL_FUNC) &_SurvUtils_InfluenceKM, 3},
     {NULL, NULL, 0}
 };
 

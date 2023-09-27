@@ -3,7 +3,7 @@
 \name{TabulateKM}
 \alias{TabulateKM}
 \title{Purpose: Kaplan-Meier estimator.
-Updated: 2022-03-19
+Updated: 2023-09-26
 Tabulate Kaplan-Meier}
 \usage{
 TabulateKM(data, status_name = "status", time_name = "time", alpha = 0.05)
@@ -22,6 +22,6 @@ Data.frame.
 }
 \description{
 Purpose: Kaplan-Meier estimator.
-Updated: 2022-03-19
+Updated: 2023-09-26
 Tabulate Kaplan-Meier
 }

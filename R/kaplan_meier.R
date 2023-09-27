@@ -1,5 +1,5 @@
 #' Purpose: Kaplan-Meier estimator.
-#' Updated: 2022-03-19
+#' Updated: 2023-09-26
 
 
 #' Tabulate Kaplan-Meier 
@@ -91,7 +91,6 @@ TabulateKM <- function(
 #' @param alpha Type I error.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @importFrom dplyr "%>%"
 #' @importFrom stats stepfun
 #' @export
 #' @return stepfun.
@@ -159,7 +158,6 @@ GetCurves <- function(
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-#' @importFrom dplyr "%>%"
 #' @export
 
 KMInfluence <- function(
@@ -176,10 +174,8 @@ KMInfluence <- function(
       status = {{status_name}},
       time = {{time_name}}
     )
-  df$idx <- seq_len(nrow(df))
   
   influence <- InfluenceKM(
-    idx = df$idx,
     status = df$status,
     time = df$time,
     trunc_time = tau

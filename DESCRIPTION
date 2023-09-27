@@ -1,6 +1,6 @@
 Package: SurvUtils
 Title: Utility Functions for Survival Analysis
-Version: 0.0.8.1
+Version: 0.0.8.2
 Authors@R: 
     person(given = "Zachary",
            family = "McCaw",

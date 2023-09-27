@@ -4,11 +4,9 @@
 \alias{InfluenceKM}
 \title{Influence Function R}
 \usage{
-InfluenceKM(idx, status, time, trunc_time)
+InfluenceKM(status, time, trunc_time)
 }
 \arguments{
-\item{idx}{Unique subject index.}
-
 \item{status}{Status, coded as 0 for censoring, 1 for death.}
 
 \item{time}{Observation time.}

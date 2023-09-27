@@ -5,13 +5,12 @@
 #' 
 #' Influence function of the Kaplan-Meier estimator at time t. Specifically,
 #' \eqn{\psi_{i}(t) = -S(t)\int_{0}^{t} dM_{i}(u) / Y(u)}.
-#'  
-#' @param idx Unique subject index. 
+#' 
 #' @param status Status, coded as 0 for censoring, 1 for death.
 #' @param time Observation time.
 #' @param trunc_time Truncation time.
 #' @return Data.frame.
-InfluenceKM <- function(idx, status, time, trunc_time) {
-    .Call(`_SurvUtils_InfluenceKM`, idx, status, time, trunc_time)
+InfluenceKM <- function(status, time, trunc_time) {
+    .Call(`_SurvUtils_InfluenceKM`, status, time, trunc_time)
 }
 
