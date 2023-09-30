@@ -62,6 +62,19 @@ arma::colvec Truncate(const arma::colvec &time, const double tau) {
 }
 
 
+// Add Leading Value
+//
+// @param x Input vector.
+// @param value Value to insert at leading position.
+arma::colvec AddLeadVal(const arma::colvec &x, const double value) {
+  const int len = x.n_elem;
+  arma::colvec out = arma::zeros(len + 1);
+  out(0) = value;
+  out.subvec(1, len) = x;
+  return out;
+}
+
+
 // ----------------------------------------------------------------------------
 // Kaplan Meier.
 // ----------------------------------------------------------------------------
@@ -142,6 +155,60 @@ arma::mat KaplanMeier(
   // Output.
   arma::mat out = arma::join_rows(eval_times, nar_out, surv_out, haz_out);
   return out;
+}
+
+
+// ----------------------------------------------------------------------------
+// AUC
+// ----------------------------------------------------------------------------
+
+//' Calculate Restricted Mean Survival Time
+//'
+//' @param status Status, coded as 0 for censoring, 1 for death.
+//' @param time Observation time.
+//' @param extend Extend AUC calculation if tau exceeds max(time)?
+//' @param tau Truncation time.
+//' @return Numeric restricted mean survival time.
+//' @export
+// [[Rcpp::export]]
+SEXP RMST(
+  const arma::colvec status,
+  const arma::colvec time,
+  const bool extend=false,
+  Rcpp::Nullable<double> tau=R_NilValue
+){
+  
+  // Unique times.
+  arma::colvec unique_times = arma::unique(time);
+  double max_time = time.max();
+  double trunc_time = max_time;
+  if (tau.isNotNull()) {
+    trunc_time = Rcpp::as<double>(tau);
+    unique_times = Truncate(unique_times, trunc_time);
+  }
+
+  // Add leading zero.
+  unique_times = AddLeadVal(unique_times, 0);
+  const int n_times = unique_times.size();
+
+  // Calculate Kaplan-Meier curve.
+  const arma::mat km_mat = KaplanMeier(unique_times, status, time);
+  arma::colvec km_times = km_mat.col(0);
+  arma::colvec surv = km_mat.col(2);
+
+  // Rcpp::Rcout << km_times << std::endl; 
+  // Rcpp::Rcout << surv << std::endl; 
+  
+  // Calculate AUC.
+  const arma::colvec delta_t = arma::diff(unique_times);
+  const arma::colvec integrand = surv.subvec(0, n_times - 2);
+  double auc = arma::sum(integrand % delta_t);
+
+  // Project past end of Kaplan-Meier curve, if applicable. 
+  if (extend && (trunc_time > max_time)) {
+    auc += (trunc_time - max_time) * surv.min(); 
+  }
+  return Rcpp::wrap(auc);
 }
 
 
