@@ -164,7 +164,7 @@ head(round(eval, digits = 3))
 
 # Plotting
 
-```{r, cache=TRUE}
+```{r}
 # Generate data.
 arm1 <- SurvUtils::GenData(base_event_rate = 0.8)
 arm1$arm <- 1
@@ -177,7 +177,7 @@ data <- rbind(arm1, arm0)
 
 ### Standard Kaplan-Meier
 
-```{r, cache=TRUE, }
+```{r}
 x_breaks <- seq(from = 0.0, to = 4.0, by = 0.50)
 data0 <- data %>% dplyr::filter(arm == 0)
 fit0 <- Temporal::FitParaSurv(data0)  # Optional parametric fit. 
@@ -194,7 +194,7 @@ cowplot::plot_grid(
 
 ### AUC
 
-```{r, cache=TRUE, }
+```{r}
 x_breaks <- seq(from = 0.0, to = 4.0, by = 0.50)
 data0 <- data %>% dplyr::filter(arm == 0)
 q_auc <- SurvUtils::PlotOneSampleAUC(data0, x_breaks = x_breaks, x_max = 4, tau = 3)
@@ -210,7 +210,7 @@ cowplot::plot_grid(
 
 ## Two Sample
 
-```{r, cache=TRUE}
+```{r}
 x_breaks <- seq(from = 0.0, to = 4.0, by = 0.50)
 contrast <- Temporal::CompParaSurv(data)  # Optional parametric fit. 
 q_km <- SurvUtils::PlotTwoSampleKM(data, contrast = contrast, x_breaks = x_breaks, x_max = 4)
