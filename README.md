@@ -1,12 +1,3 @@
----
-title: "README"
-author: "Zachary McCaw"
-date: "2023-10-09"
-output: 
-  html_document: 
-    keep_md: TRUE
---- 
-
 # Functions for Survival Analysis
 
 Zachary R. McCaw <br>
