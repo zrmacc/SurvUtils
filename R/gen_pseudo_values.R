@@ -2,15 +2,18 @@
 
 #' Generate Pseudo-values
 #' 
-#' Generates pseudo-values for each patient as the target parameter plus
-#' the influence function. 
-#' 
+#' Generates pseudo-values for each patient as the target parameter plus the
+#' influence function.
+#'
 #' @param data Data.frame.
 #' @param tau Truncation time.
-#' @param type Type of pseudo-value, select "prob" for probability and "rmst" for 
-#'   restricted mean survival time.
+#' @param type Type of pseudo-value, select "prob" for probability and "rmst"
+#'   for restricted mean survival time.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
+#' @return Numeric vector of pseudo-values, corresponding to the rows of the
+#'   data.frame.
+#' @export 
 GenPseudo <- function(
   data,
   tau = NULL,
@@ -62,5 +65,5 @@ GenPseudo <- function(
   
   # Return pseudo-values.
   pseudo <- param + inf
-  
+  return(pseudo)
 }
