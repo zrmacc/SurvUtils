@@ -1,0 +1,188 @@
+---
+title: "Perturbation Bootstrap"
+author: "Zachary McCaw"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document
+--- 
+
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(cache = FALSE, fig.align = "center")
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(SurvUtils)
+})
+```
+
+
+
+# Perturbation Bootstrap
+
+The perturbation bootstrap ([Zhezhen 2001](https://www.jstor.org/stable/2673486), [Das 2019](https://doi.org/10.3150/17-BEJ1001)) is a method of approximating the distribution of $\hat{\theta} - \theta$. The general approach is first to obtain an influence function representation:
+$$
+\sqrt{n}\big(\hat{\theta} - \theta\big) = \frac{1}{\sqrt{n}}\sum_{i=1}^{n}\psi_{i} + o_{p}(1)
+$$
+
+Next, the influence contributions of all subjects $\{\hat{\psi}_{i}\}_{i=1}^{n}$ are estimated. For $b$ in $1, \dots, B$ iterations, mean 1, variance 1 weights $\{\omega_{i}^{(b)}\}_{i=1}^{n}$ are sampled from a known distribution, independently of the observed data. These weights are used to perturb the sum:
+$$
+(\theta_{(b)}^{*} - \hat{\theta}) = \frac{1}{n}\sum_{i=1}^{n}\hat{\psi}_{i}\omega_{i}^{(b)}
+$$
+
+Upon evaluating the right-hand side, each set of weights provides a realization of $(\theta_{(b)}^{*} - \hat{\theta})$, the deviation of a parameter estimate $\theta_{(b)}^{*}$ based on the perturbed data around the observed value $\hat{\theta}$. It has been shown that the distribution of $(\theta_{(b)}^{*} - \hat{\theta})$ can be used to approximate that of $(\hat{\theta} - \theta)$ ([Zhezhen 2001](https://www.jstor.org/stable/2673486), [Das 2019](https://doi.org/10.3150/17-BEJ1001)). For example, the standard deviation of the $B$ realizations $\{(\theta_{(b)}^{*} - \hat{\theta})\}_{b=1}^{B}$ is an estimate for the standard error of $\hat{\theta}$. 
+
+
+# Kaplan-Meier Example
+
+Consider survival data of the form $\big\{(U_{i}, \delta_{i})\big\}_{i=1}^{n}$, where $U_{i} = \min(T_{i}, C_{i})$ is the minimum of the event time $T_{i}$ and the censoring time $C_{i}$, and $\delta_{i} = \mathbb{I}(T_{i} \leq C_{i})$ is the status indicator. The Kaplan-Meier estimate has an influence function representation of the form ([Andersen 1993](https://doi.org/10.1007/978-1-4612-4348-9)):
+$$
+\begin{gathered}
+\sqrt{n}\big\{\hat{S}(t) - S(t)\big\} = \frac{1}{\sqrt{n}}\sum_{i=1}^{n}\psi_{i}(t) + o_{p}(1), \\
+\psi_{i}(t) = -S(t) \int_{0}^{t}\frac{dM_{i}(u)}{n^{-1}\sum_{i=1}^{n}Y_{i}(u)}.
+\end{gathered}
+$$
+
+Here $Y_{i} = \mathbb{I}(U_{i} \geq t)$ is an at risk indicator, $dM_{i}(t) = dN_{i}(t) - Y_{i}(t)dA(t)$ is the increment in the counting process martingale, $N_{i}(t) = \mathbb{I}(U_{i} \leq t, \delta_{i} = 1)$ is the event counting process, and $A(t) = \int_{0}^{t}\alpha(u)du$ is the cumulative hazard. 
+
+Data subject to censoring are generated according to an exponential distribution with rate $\lambda = 1$. Consider estimation of the survival probability at time $\tau = 1$. The exact calculation is $S(1) = \exp(-1) = 0.368$. 
+
+```{r}
+set.seed(101)
+
+# Generate data.
+n <- 1e3
+data <- SurvUtils::GenData(n = n)
+tau <- 1.0
+
+# Estimated survival probability.
+prob <- SurvUtils::OneSampleRates(data, tau = tau) %>%
+  dplyr::mutate_if(is.numeric, function(x) {round(x, digits = 3)})
+  
+show(prob)
+```
+
+The influence contributions at time $t$ can be estimated as:
+$$
+\begin{gathered}
+\hat{\psi}_{i}(t) = -\hat{S}(t) \sum_{u \leq t}\frac{dN_{i}(u) - Y_{i}(u)d\hat{A}(u)}{n^{-1}\sum_{j=1}^{n}Y_{j}(u)}, \\
+d\hat{A}(u) = \frac{\sum_{j=1}^{n}dN_{j}(u)}{\sum_{j=1}^{n}Y_{j}(u)}
+\end{gathered}
+$$
+where the sum is taken over unique event times $u$ up to time $t$, and $d\hat{A}(u)$ is the estimated increment in the cumulative hazard at time $u$. The influence function contributions can be estimated using `KMInfluence`:
+```{r}
+# Estimate influence contributions.
+psi <- SurvUtils::KMInfluence(data = data, tau = tau)
+head(round(psi, digits = 3))
+```
+
+The mean of the influence function contributions will approximate zero:
+```{r}
+head(round(mean(psi), digits = 10))
+```
+
+Writing:
+$$
+\hat{S}(t) - S(t) = \frac{1}{n}\sum_{i=1}^{n}\psi_{i}(t) + o_{p}(n^{-1/2})
+$$
+
+the variance of $\hat{S}(t) - S(t)$ is:
+$$
+\mathbb{V}\big\{\hat{S}(t) - S(t)\big\} = \frac{1}{n^2}\sum_{i=1}^{n}\mathbb{V}(\psi_{i}) + o_{p}(n^{-1})
+$$
+As the influence function contributions have mean zero $\mathbb{E}(\psi_{i}) = 0$, their variance $\mathbb{V}(\psi_{i}) = \mathbb{E}(\psi_{i}^{2})$. The sampling variance of $\hat{S}(t)$ can be approximated as:
+$$
+\hat{\mathbb{V}}\big\{\hat{S}(t) - S(t)\big\} = \frac{1}{n} \cdot \frac{1}{n}\sum_{i=1}^{n}\psi_{i}^{2}.
+$$
+
+\newpage
+Empirically, the estimated standard error of $\hat{S}(t)$ based on $\{\hat{\psi}_{i}\}_{i=1}^{n}$ is:
+```{r}
+
+# Estimate sampling variance and standard error.
+sampling_var <- (1 / n) * mean(psi^2) 
+se <- sqrt(sampling_var)
+show(round(se, digits = 4))
+```
+
+For comparison, the standard error provided by the `survival` package is:
+```{r}
+
+# Reference standard error. 
+km_fit <- survival::survfit(
+  survival::Surv(time, status) ~ 1, data = data)
+km_fit <- summary(km_fit)
+
+closest_time <- max(km_fit$time[km_fit$time <= tau])
+ref_se <- km_fit$std.err[km_fit$time == closest_time]
+
+show(round(ref_se, digits = 4))
+```
+When estimating standard errors with [`survfit`](https://cran.r-project.org/web/packages/survival/index.html), note that those provided by default (i.e. before applying `summary`) are not properly scaled, see the discussion by [Magirr 2022](https://dominicmagirr.github.io/post/2022-01-18-be-careful-with-standard-errors-in-survival-survfit/).
+
+To estimate the standard error by perturbation bootstrap, the summand is perturbed with mean 1, variance 1 weights $\{\omega_{i}^{(b)}\}_{i=1}^{n}$, generated from a known distribution, such as $\Gamma(1, 1)$, independently of the observed data:
+$$
+(\theta_{(b)}^{*} - \hat{\theta}) = \frac{1}{n}\sum_{i=1}^{n}\hat{\psi}_{i}\omega_{i}^{(b)}
+$$
+
+Upon taking the weighted sum, each set of weights yields a realization of $(\theta_{(b)}^{*} - \hat{\theta})$. From the collection of $\{(\theta_{(b)}^{*} - \hat{\theta})\}_{b=1}^{B}$, properties of $(\hat{\theta} - \theta)$ may be approximated, notably the standard error:
+```{r}
+
+# Perturbation bootstrap.
+bootstraps <- 2e3
+perturb <- rep(0, bootstraps)
+for (b in 1:bootstraps) {
+  draw <- rgamma(n = n, shape = 1)
+  perturb[b] <- mean(psi * draw)
+}
+perturb_se <- sd(perturb)
+show(round(perturb_se, digits = 4))
+```
+
+
+# RMST Example
+
+The case of the restricted mean survival time (RMST) is similar. Based on the simulated exponential $\lambda = 1$, the analytical RMST at time $\tau = 1$ is $\int_{0}^{1}e^{-t}dt = 1 - e^{-1} = 0.632$. The estimated RMST is:
+```{r}
+# Estimated RMST.
+tau <- 1
+rmst <- SurvUtils::OneSampleRMST(data, tau = tau)
+show(round(rmst, digits = 3))
+```
+
+The influence function of the RMST at time $t$ is ([Andersen 1993](https://doi.org/10.1007/978-1-4612-4348-9)):
+$$
+\begin{gathered}
+\sqrt{n}\big\{\hat{R}(t) - R(t)\big\} = \frac{1}{\sqrt{n}}\sum_{i=1}^{n}\psi_{i}(t) + o_{p}(1), \\
+\psi_{i}(t) = -\int_{0}^{t}\frac{\mu_{t}(u)dM_{i}(u)}{n^{-1}\sum_{i=1}^{n}Y_{i}(u)}, \\
+\mu_{t}(u) = \int_{u}^{t}S(t)dt.
+\end{gathered}
+$$
+
+The influence function contributions may be estimated using `RMSTInfluence`:
+```{r}
+# Estimate influence contributions.
+psi <- SurvUtils::RMSTInfluence(data = data, tau = tau)
+head(round(psi, digits = 3))
+```
+
+The standard error estimated directly from the influence function is:
+```{r}
+# Estimate sampling variance and standard error.
+sampling_var <- (1 / n) * mean(psi^2) 
+se <- sqrt(sampling_var)
+show(round(se, digits = 4))
+```
+
+The standard error estimated by perturbation bootstrap is:
+```{r}
+
+# Perturbation bootstrap.
+bootstraps <- 2e3
+perturb <- rep(0, bootstraps)
+for (b in 1:bootstraps) {
+  draw <- rgamma(n = n, shape = 1)
+  perturb[b] <- mean(psi * draw)
+}
+perturb_se <- sd(perturb)
+show(round(perturb_se, digits = 4))
+```
