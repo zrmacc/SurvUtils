@@ -4,6 +4,10 @@ author: "Zachary McCaw"
 date: "`r Sys.Date()`"
 output: 
   pdf_document
+vignette: >
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteIndexEntry{Perturbation Bootstrap}
+  %\usepackage[UTF-8]{inputenc}
 --- 
 
 

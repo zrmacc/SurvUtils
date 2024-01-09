@@ -18,6 +18,8 @@ Imports:
   stats,
   survival
 Suggests: 
+  knitr,
+  rmarkdown,
   testthat (>= 3.0.0),
   withr
 Roxygen: list(markdown = TRUE)
@@ -25,3 +27,7 @@ RoxygenNote: 7.2.3
 LinkingTo: 
   RcppArmadillo,
   Rcpp
+VignetteBuilder: knitr
+VignetteEngine: knitr::rmarkdown
+VignetteIndexEntry: "Perturbation Bootstrap"
+VignetteSource: vignettes/perturbation_bootstrap.Rmd

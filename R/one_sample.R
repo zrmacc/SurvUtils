@@ -140,6 +140,7 @@ OneSampleRMST <- function(
   }
   
   # Table.
+  time <- NULL
   tab <- TabulateKM(df, alpha = alpha) %>%
     dplyr::filter(time <= tau)
   auc <- RMST(status = df$status, time = df$time, tau = tau)

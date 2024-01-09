@@ -56,38 +56,6 @@ km_tab <- SurvUtils::TabulateKM(data)
 head(km_tab)
 ```
 
-#### Influence function
-
-The influence function expansion of the Kaplan-Meier estimator is:
-
-$$
-\sqrt{n}\big\{ \hat{S}(t) - S(t) \big\} = \frac{1}{\sqrt{n}}\sum_{i=1}^{n}\psi_{i}(t) + o_{p}(1)
-$$
-where:
-
-$$
-\psi_{i}(t) = -S(t) \int_{0}^{t}\frac{dM_{i}(u)}{n^{-1} Y(u)}
-$$
-and $dM_{i}$ is the counting-process martingale:
-
-$$
-dM_{i}(u) = dN_{i}(u) - Y_{i}(u)dH(u)
-$$
-
-```{r}
-n <- 1000
-data <- GenData(n = n)
-tau <- 1.0
-
-# Influence function calculation.
-influence <- KMInfluence(data, tau = tau)
-
-# Estimated variance of the KM estimator at time tau.
-inf_var <- mean(influence^2) / n
-inf_se <- sqrt(inf_var)
-print(round(inf_se, digits = 4))
-```
-
 ### Event Rate, Percentile, Restricted Mean Survival
 
 * Calculate the event rate at a point in time.
@@ -161,6 +129,10 @@ eval <- CompreCoxCstat(
 
 head(round(eval, digits = 3))
 ```
+
+# Inference
+
+For a tutorial on influence functions and the perturbation bootstrap, see [this vignette](https://github.com/zrmacc/SurvUtils/blob/master/vignettes/Perturbation-bootstrap.pdf).
 
 # Plotting
 
