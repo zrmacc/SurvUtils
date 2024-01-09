@@ -140,18 +140,9 @@ OneSampleRMST <- function(
   }
   
   # Table.
-  tab <- TabulateKM(df, alpha = alpha)
-  
-  haz <- time <- NULL
-  tab <- tab %>%
-    dplyr::filter(haz > 0) %>%
+  tab <- TabulateKM(df, alpha = alpha) %>%
     dplyr::filter(time <= tau)
-  n_times <- nrow(tab)
-  
-  delta_t <- diff(c(0, tab$time))
-  surv <- c(1, tab$surv[1:(n_times - 1)])
-  
-  auc <- sum(surv * delta_t)
+  auc <- RMST(status = df$status, time = df$time, tau = tau)
   
   # Variance calculation.
   # Mu_{\tau}(t) = \int_{t}^{\tau}S(u)du.
@@ -160,8 +151,9 @@ OneSampleRMST <- function(
   # dN_t is the number of events and Y_t is the number at risk.
   
   event_times <- tab$time
-  delta_t <- diff(c(event_times, tau))
   surv <- tab$surv
+  
+  delta_t <- diff(c(event_times, tau))
   mu_t <- rev(cumsum(rev(delta_t * surv)))
   
   var <- sum(mu_t^2 * tab$haz / tab$nar)

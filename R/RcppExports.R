@@ -13,7 +13,7 @@ RMST <- function(status, time, extend = FALSE, tau = NULL) {
     .Call(`_SurvUtils_RMST`, status, time, extend, tau)
 }
 
-#' Influence Function R
+#' Kaplan-Meier Influence Function
 #' 
 #' Influence function of the Kaplan-Meier estimator at time t. Specifically,
 #' \eqn{\psi_{i}(t) = -S(t)\int_{0}^{t} dM_{i}(u) / Y(u)}.
@@ -21,8 +21,21 @@ RMST <- function(status, time, extend = FALSE, tau = NULL) {
 #' @param status Status, coded as 0 for censoring, 1 for death.
 #' @param time Observation time.
 #' @param trunc_time Truncation time.
-#' @return Data.frame.
+#' @return Numeric vector of influence function values for each observation.
 InfluenceKM <- function(status, time, trunc_time) {
     .Call(`_SurvUtils_InfluenceKM`, status, time, trunc_time)
+}
+
+#' RMST Influence Function
+#' 
+#' Influence function of the restricted mean survival time at time t. Specifically,
+#' \eqn{\psi_{i}(t) = -S(t)\int_{0}^{t} \mu_{\tau} dM_{i}(u) / Y(u)}.
+#' 
+#' @param status Status, coded as 0 for censoring, 1 for death.
+#' @param time Observation time.
+#' @param trunc_time Truncation time.
+#' @return Numeric vector of influence function values for each observation.
+InfluenceRMST <- function(status, time, trunc_time) {
+    .Call(`_SurvUtils_InfluenceRMST`, status, time, trunc_time)
 }
 

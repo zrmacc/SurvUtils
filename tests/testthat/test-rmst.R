@@ -27,3 +27,44 @@ test_that("Test restricted mean survival time calculation.", {
   expect_equal(obs, exp)
   
 })
+
+
+test_that("Test influence function calculation.", {
+  
+  # Data.
+  data <- data.frame(
+    time = c(1, 2, 3, 4, 5),
+    status = c(1, 1, 1, 1, 0)
+  )
+  n <- nrow(data)
+  tau <- 4
+  
+  # Manual calculation.
+  tab <- TabulateKM(data) %>%
+    dplyr::filter(time <= tau)  
+  
+  event_times <- tab$time
+  surv <- tab$surv
+  nar <- tab$nar
+  
+  delta_t <- diff(c(event_times, tau))
+  mu_t <- rev(cumsum(rev(delta_t * surv)))
+  
+  mart_t <- rbind(
+    c(0, 1 - 0.2, 0, 0, 0),
+    c(0, -0.2, 1 - 0.25, 0, 0),
+    c(0, -0.2, -0.25, 1 - 1/3, 0),
+    c(0, -0.2, -0.25, -1/3, 1 - 0.5),
+    c(0, -0.2, -0.25, -1/3, -0.5)
+  )
+  
+  exp_psi <- rep(0, n)
+  for (i in 1:n) {
+    exp_psi[i] <- -1 * sum(mu_t / (nar / n) * mart_t[i, ])
+  }
+  
+  # Observed.
+  obs_psi <- RMSTInfluence(data, tau = tau)
+  expect_equal(obs_psi, exp_psi)
+  
+})

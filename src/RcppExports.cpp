@@ -38,10 +38,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// InfluenceRMST
+SEXP InfluenceRMST(const arma::colvec status, const arma::colvec time, const float trunc_time);
+RcppExport SEXP _SurvUtils_InfluenceRMST(SEXP statusSEXP, SEXP timeSEXP, SEXP trunc_timeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::colvec >::type status(statusSEXP);
+    Rcpp::traits::input_parameter< const arma::colvec >::type time(timeSEXP);
+    Rcpp::traits::input_parameter< const float >::type trunc_time(trunc_timeSEXP);
+    rcpp_result_gen = Rcpp::wrap(InfluenceRMST(status, time, trunc_time));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_SurvUtils_RMST", (DL_FUNC) &_SurvUtils_RMST, 4},
     {"_SurvUtils_InfluenceKM", (DL_FUNC) &_SurvUtils_InfluenceKM, 3},
+    {"_SurvUtils_InfluenceRMST", (DL_FUNC) &_SurvUtils_InfluenceRMST, 3},
     {NULL, NULL, 0}
 };
 

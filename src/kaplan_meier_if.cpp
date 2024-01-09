@@ -213,6 +213,78 @@ SEXP RMST(
 
 
 // ----------------------------------------------------------------------------
+// Integrate Kaplan Meier
+// ----------------------------------------------------------------------------
+
+// Integrate Kaplan Meier
+//
+// Integrate the Kaplan-Meier curve between two values.
+// 
+// @param a limit of integration.
+// @param b limit of integration.
+// @param eval_times Times at which the Kaplan-Meier curve is evaluated.
+// @param surv Estimated survival at the evaluation times.
+// @return Area under the KM curve between the type values.
+double IntegrateKM(
+    const double a, 
+    const double b,
+    const arma::colvec eval_times,    
+    const arma::colvec surv
+) {
+
+  if (a == b) {
+    return 0;
+  }
+  
+  // Determine survival at a.
+  arma::colvec lower_time_vec = eval_times.elem(arma::find(eval_times <= a, 1, "last"));
+  double lower_time = lower_time_vec.at(0);
+  arma::colvec lower_surv_vec = surv.elem(arma::find(eval_times == lower_time));
+  double lower_surv = lower_surv_vec.at(0);
+  
+  // Determine survival at b.
+  arma::colvec upper_time_vec = eval_times.elem(arma::find(eval_times <= b, 1, "last"));
+  const double upper_time = upper_time_vec.at(0);
+  arma::colvec upper_surv_vec = surv.elem(arma::find(eval_times == upper_time));
+  const double upper_surv = upper_surv_vec.at(0);
+  
+  // Subset to the evaluation times strictly between a and b.
+  // Append a and b to the evaluation times.
+  // Append surv(a) and surv(b) to the survival values.
+  const arma::colvec eval_times_subset = eval_times.elem(arma::find(
+    (eval_times > a) && (eval_times < b)
+  ));
+  const arma::colvec surv_subset = surv.elem(arma::find(
+    (eval_times > a) && (eval_times < b)
+  ));
+  arma::colvec int_times = arma::join_cols(eval_times_subset, arma::vec({a, b}));
+
+  // Sort and reduce to unique values.
+  int_times = arma::unique(int_times);
+  const double n_times = int_times.n_elem;
+  
+  // Construct vector of survival values corresponding to integration times.
+  arma::colvec int_values = arma::zeros(n_times);
+  for (int i=0; i<n_times; i++){
+    if (i == 0) {
+      int_values(i) = lower_surv;
+    } else if (i == n_times - 1) {
+      int_values(i) = upper_surv;
+    } else {
+      arma::colvec lookup_surv = surv.elem(arma::find(eval_times == int_times(i)));
+      int_values(i) = lookup_surv.at(0);
+    }
+  }
+  
+  // Integrate.
+  const arma::colvec delta_t = arma::diff(int_times);
+  const arma::colvec integrand = int_values.subvec(0, delta_t.n_elem - 1);
+  const double out = arma::sum(integrand % delta_t);
+  return out;
+}
+
+
+// ----------------------------------------------------------------------------
 // Martingales.
 // ----------------------------------------------------------------------------
 
@@ -279,7 +351,7 @@ arma::mat CalcMartingale(
 // Influence functions.
 // ----------------------------------------------------------------------------
 
-//' Influence Function R
+//' Kaplan-Meier Influence Function
 //' 
 //' Influence function of the Kaplan-Meier estimator at time t. Specifically,
 //' \eqn{\psi_{i}(t) = -S(t)\int_{0}^{t} dM_{i}(u) / Y(u)}.
@@ -287,7 +359,7 @@ arma::mat CalcMartingale(
 //' @param status Status, coded as 0 for censoring, 1 for death.
 //' @param time Observation time.
 //' @param trunc_time Truncation time.
-//' @return Data.frame.
+//' @return Numeric vector of influence function values for each observation.
 // [[Rcpp::export]]
 
 SEXP InfluenceKM(
@@ -323,4 +395,60 @@ SEXP InfluenceKM(
 	}
 
 	return Rcpp::wrap(influence);
+}
+
+
+//' RMST Influence Function
+//' 
+//' Influence function of the restricted mean survival time at time t. Specifically,
+//' \eqn{\psi_{i}(t) = -S(t)\int_{0}^{t} \mu_{\tau} dM_{i}(u) / Y(u)}.
+//' 
+//' @param status Status, coded as 0 for censoring, 1 for death.
+//' @param time Observation time.
+//' @param trunc_time Truncation time.
+//' @return Numeric vector of influence function values for each observation.
+// [[Rcpp::export]]
+
+SEXP InfluenceRMST(
+    const arma::colvec status,
+    const arma::colvec time,
+    const float trunc_time 
+){
+
+  // Unique times.
+  arma::colvec unique_times = arma::unique(time);
+  
+  // Add leading zero.
+  unique_times = AddLeadVal(unique_times, 0);
+  unique_times = Truncate(unique_times, trunc_time);
+  const int n_subj = time.n_elem;
+  
+  // Calculate Kaplan-Meier curve.
+  const arma::mat km_mat = KaplanMeier(unique_times, status, time);
+  const arma::colvec km_times = km_mat.col(0);
+  const arma::colvec nar = km_mat.col(1);
+  const arma::colvec surv = km_mat.col(2);
+  const arma::colvec haz = km_mat.col(3);
+  
+  // Proportion at risk.
+  const arma::colvec par = nar / n_subj;
+  
+  // Calculate martingales.
+  arma::mat mart = CalcMartingale(km_times, haz, status, time);
+  mart = mart.t();
+  
+  // Calculate mu;
+  const double n_times = km_times.n_elem;
+  arma::colvec mu = arma::zeros(n_times);
+  for (int j=0; j<n_times; j++) {
+    mu(j) = IntegrateKM(km_times(j), trunc_time, km_times, surv);
+  }
+  
+  // Calculate influence function.
+  arma::colvec psi = arma::zeros(n_subj);
+  for (int i=0; i<n_subj; i++) {
+    psi(i) = -1 * arma::sum(mu / par % mart.col(i));
+  }
+  
+  return Rcpp::wrap(psi);
 }

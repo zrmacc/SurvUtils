@@ -157,7 +157,7 @@ GetCurves <- function(
 #' @param tau Truncation time at which to calculate the influence.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame.
+#' @return Numeric vector.
 #' @export
 
 KMInfluence <- function(
