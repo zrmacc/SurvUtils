@@ -1,7 +1,7 @@
 # Functions for Survival Analysis
 
 Zachary R. McCaw <br>
-Updated: 2023-09-26
+Updated: 2024-01-09
 
 
 ```r
