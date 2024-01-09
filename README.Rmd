@@ -132,7 +132,7 @@ head(round(eval, digits = 3))
 
 # Inference
 
-For a tutorial on influence functions and the perturbation bootstrap, see [this vignette](https://github.com/zrmacc/SurvUtils/blob/master/vignettes/Perturbation-bootstrap.pdf).
+For a tutorial on influence functions and the perturbation bootstrap, see [this vignette](https://github.com/zrmacc/SurvUtils/blob/master/vignettes/perturbation_bootstrap.pdf).
 
 # Plotting
 

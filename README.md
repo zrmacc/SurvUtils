@@ -4,8 +4,6 @@ Zachary R. McCaw <br>
 Updated: 2023-09-26
 
 
-
-
 ```r
 suppressPackageStartupMessages({
   library(dplyr)
@@ -36,19 +34,19 @@ head(data)
 ```
 
 ```
-##   idx covariates true_event_rate frailty event_time censor_time      time
-## 1   1          1               1       1  1.9034260  10.0879511 1.9034260
-## 2   2          1               1       1  0.1031929   0.3953060 0.1031929
-## 3   3          1               1       1  0.3290198   5.6795299 0.3290198
-## 4   4          1               1       1  0.7635053   2.9790150 0.7635053
-## 5   5          1               1       1  0.4515167   0.9243661 0.4515167
-## 6   6          1               1       1  1.5540088   2.1998618 1.5540088
+##   idx covariates true_event_rate frailty event_time censor_time       time
+## 1   1          1               1       1 0.41809511    3.330890 0.41809511
+## 2   2          1               1       1 0.09365577    4.263774 0.09365577
+## 3   3          1               1       1 0.07381663    5.782096 0.07381663
+## 4   4          1               1       1 0.87577447    4.178681 0.87577447
+## 5   5          1               1       1 3.87965972    3.258151 3.25815086
+## 6   6          1               1       1 0.03210211    3.647888 0.03210211
 ##   status
 ## 1      1
 ## 2      1
 ## 3      1
 ## 4      1
-## 5      1
+## 5      0
 ## 6      1
 ```
 
@@ -71,50 +69,13 @@ head(km_tab)
 ##      time censor events   nar    haz cum_haz cum_haz_var cum_haz_lower
 ##     <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>         <dbl>
 ## 1 0            0      0   100 0       0         0              0      
-## 2 0.00708      0      1   100 0.01    0.01      0.0001         0.00141
-## 3 0.0162       0      1    99 0.0101  0.0201    0.000202       0.00503
-## 4 0.0168       0      1    98 0.0102  0.0303    0.000306       0.00977
-## 5 0.0217       0      1    97 0.0103  0.0406    0.000412       0.0152 
-## 6 0.0354       0      1    96 0.0104  0.0510    0.000521       0.0212 
+## 2 0.00556      0      1   100 0.01    0.01      0.0001         0.00141
+## 3 0.0248       0      1    99 0.0101  0.0201    0.000202       0.00503
+## 4 0.0294       1      0    98 0       0.0201    0.000202       0.00503
+## 5 0.0321       0      1    97 0.0103  0.0304    0.000308       0.00981
+## 6 0.0355       0      1    96 0.0104  0.0408    0.000417       0.0153 
 ## # ℹ 5 more variables: cum_haz_upper <dbl>, surv <dbl>, surv_var <dbl>,
 ## #   surv_lower <dbl>, surv_upper <dbl>
-```
-
-#### Influence function
-
-The influence function expansion of the Kaplan-Meier estimator is:
-
-$$
-\sqrt{n}\big\{ \hat{S}(t) - S(t) \big\} = \frac{1}{\sqrt{n}}\sum_{i=1}^{n}\psi_{i}(t) + o_{p}(1)
-$$
-where:
-
-$$
-\psi_{i}(t) = -S(t) \int_{0}^{t}\frac{dM_{i}(u)}{n^{-1} Y(u)}
-$$
-and $dM_{i}$ is the counting-process martingale:
-
-$$
-dM_{i}(u) = dN_{i}(u) - Y_{i}(u)dH(u)
-$$
-
-
-```r
-n <- 1000
-data <- GenData(n = n)
-tau <- 1.0
-
-# Influence function calculation.
-influence <- KMInfluence(data, tau = tau)
-
-# Estimated variance of the KM estimator at time tau.
-inf_var <- mean(influence^2) / n
-inf_se <- sqrt(inf_var)
-print(round(inf_se, digits = 4))
-```
-
-```
-## [1] 0.0162
 ```
 
 ### Event Rate, Percentile, Restricted Mean Survival
@@ -128,8 +89,8 @@ SurvUtils::OneSampleRates(data, tau = 1.0)
 ```
 
 ```
-##   tau     rate         se     lower     upper
-## 1   1 0.372035 0.01621849 0.3402719 0.4037691
+##   tau     rate        se     lower     upper
+## 1   1 0.402005 0.0508188 0.3023984 0.4993984
 ```
 
 
@@ -140,7 +101,7 @@ SurvUtils::OneSamplePercentiles(data, p = 0.5)
 
 ```
 ##   prob      time     lower     upper
-## 1  0.5 0.6959735 0.6356792 0.7725041
+## 1  0.5 0.6788454 0.5055086 0.9872552
 ```
 
 
@@ -151,7 +112,7 @@ SurvUtils::OneSampleRMST(data, tau = 1.0)
 
 ```
 ##   tau       auc         se     lower     upper
-## 1   1 0.6311883 0.01172067 0.6082162 0.6541603
+## 1   1 0.6219704 0.03884637 0.5458329 0.6981079
 ```
 
 ## Two Sample
@@ -186,15 +147,15 @@ SurvUtils::CompareRates(data, tau = 1.0)
 ```
 ## Marginal Statistics:
 ##   arm tau  rate     se
-## 1   0   1 0.428 0.0537
-## 2   1   1 0.525 0.0528
+## 1   0   1 0.345 0.0511
+## 2   1   1 0.602 0.0535
 ## 
 ## 
 ## Contrasts:
-##   stat    est     se   lower upper     p
-## 1   rd 0.0962 0.0753 -0.0513 0.244 0.201
-## 2   rr 1.2200 0.1970  0.8940 1.680 0.207
-## 3   or 1.4700 0.4490  0.8100 2.680 0.204
+##   stat   est    se lower upper        p
+## 1   rd 0.257 0.074 0.112 0.402 0.000510
+## 2   rr 1.740 0.301 1.240 2.450 0.001260
+## 3   or 2.870 0.912 1.540 5.350 0.000897
 ```
 
 ### Compare RMSTs
@@ -206,14 +167,14 @@ SurvUtils::CompareRMSTs(data, tau = 1.0)
 ```
 ## Marginal Statistics:
 ##   tau   auc     se lower upper arm
-## 1   1 0.603 0.0384 0.528 0.679   0
-## 2   1 0.742 0.0326 0.678 0.805   1
+## 1   1 0.653 0.0361 0.582 0.724   0
+## 2   1 0.803 0.0304 0.743 0.862   1
 ## 
 ## 
 ## Contrasts:
-##   stat   est     se  lower upper       p
-## 1   rd 0.138 0.0504 0.0395 0.237 0.00606
-## 2   rr 1.230 0.0950 1.0600 1.430 0.00765
+##   stat  est     se  lower upper       p
+## 1   rd 0.15 0.0472 0.0573 0.242 0.00151
+## 2   rr 1.23 0.0824 1.0800 1.400 0.00206
 ```
 
 ### Compare Cox Models
@@ -242,13 +203,17 @@ head(round(eval, digits = 3))
 
 ```
 ##   fold cstat1 cstat2  diff ratio
-## 1    1  0.769  0.674 0.096 1.142
-## 2    2  0.786  0.664 0.122 1.183
-## 3    3  0.779  0.709 0.070 1.098
-## 4    4  0.798  0.642 0.157 1.244
-## 5    5  0.785  0.712 0.073 1.102
-## 6    6  0.820  0.744 0.076 1.102
+## 1    1  0.774  0.703 0.071 1.101
+## 2    2  0.790  0.699 0.091 1.130
+## 3    3  0.821  0.692 0.128 1.185
+## 4    4  0.760  0.641 0.119 1.186
+## 5    5  0.803  0.667 0.136 1.204
+## 6    6  0.822  0.678 0.144 1.213
 ```
+
+# Inference
+
+For a tutorial on influence functions and the perturbation bootstrap, see [this vignette](https://github.com/zrmacc/SurvUtils/blob/master/vignettes/perturbation_bootstrap.pdf).
 
 # Plotting
 
@@ -282,7 +247,7 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
 
 ### AUC
 
@@ -301,7 +266,7 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
 
 ## Two Sample
 
@@ -320,4 +285,4 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" />
