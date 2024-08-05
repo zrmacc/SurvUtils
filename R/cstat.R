@@ -106,7 +106,7 @@ WeightedCstat <- function(
     ) %>%
     dplyr::select(status, time) %>%
     dplyr::mutate(status = 1 - status)
-  df0_curves <- GetCurves(df0)
+  df0_curves <- SurvCurves(df0)
   km <- df0_curves@Surv
   
   # Evaluate risk score.

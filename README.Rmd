@@ -10,7 +10,7 @@ output:
 # Functions for Survival Analysis
 
 Zachary R. McCaw <br>
-Updated: 2023-09-26
+Updated: 2024-08-04
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(cache = FALSE, fig.align = "center")
@@ -116,7 +116,8 @@ x1 <- rnorm(n)
 x2 <- rnorm(n)
 data <- SurvUtils::GenData(
   covariates = cbind(x1, x2),
-  beta_event = c(1.0, -1.0)
+  beta_event = c(1.0, -1.0),
+  simple = FALSE
 )
 
 # Evaluate.

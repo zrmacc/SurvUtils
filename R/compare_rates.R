@@ -17,10 +17,7 @@
 #' @param rate_name Name of rate column.
 #' @param se_name Name of standard error column.
 #' @return Data.frame.
-#' 
-#' @importFrom dplyr "%>%" 
 #' @export
-
 RateDiff <- function(
   rates, 
   alpha = 0.05,
@@ -30,11 +27,7 @@ RateDiff <- function(
 ) {
   
   # Initialize.
-  arm <- NULL
-  est <- NULL
-  log_se <- NULL
-  rate <- NULL
-  se <- NULL
+  arm <- est <- log_se <- rate <- se <- NULL
   z <- stats::qnorm(p = 1 - alpha / 2)
   
   # Rate difference calculation.
@@ -73,10 +66,7 @@ RateDiff <- function(
 #' @param rate_name Name of rate column.
 #' @param se_name Name of standard error column.
 #' @return Data.frame
-#' 
-#' @importFrom dplyr "%>%"
 #' @export
-
 RateRatio <- function(
   rates, 
   alpha = 0.05,
@@ -86,11 +76,7 @@ RateRatio <- function(
 ) {
   
   # Initialize.
-  arm <- NULL
-  est <- NULL
-  log_se <- NULL
-  rate <- NULL
-  se <- NULL
+  arm <- est <- log_se <- rate <- se <- NULL
   z <- stats::qnorm(p = 1 - alpha / 2)
   
   # Rate ratio calculation.
@@ -131,9 +117,7 @@ RateRatio <- function(
 #' @param rate_name Name of rate column.
 #' @param se_name Name of standard error column.
 #' @return Data.frame
-#' @importFrom dplyr "%>%"
 #' @export
-
 OddsRatio <- function(
   rates, 
   alpha = 0.05,
@@ -143,11 +127,7 @@ OddsRatio <- function(
 ) {
   
   # Initialize.
-  arm <- NULL
-  est <- NULL
-  log_se <- NULL
-  rate <- NULL
-  se <- NULL
+  arm <- est <- log_se <- rate <- se <- NULL
   z <- stats::qnorm(p = 1 - alpha / 2)
   
   # Odds ratio calculation.
@@ -195,10 +175,7 @@ OddsRatio <- function(
 #' @param tau Truncation time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-#' 
-#' @importFrom dplyr "%>%"
 #' @export
-
 CompareRates <- function(
   data,
   alpha = 0.05,
@@ -226,10 +203,10 @@ CompareRates <- function(
   arm <- NULL
   km0 <- df %>% 
     dplyr::filter(arm == 0) %>%
-    GetCurves()
+    SurvCurves()
   km1 <- df %>% 
     dplyr::filter(arm == 1) %>%
-    GetCurves()
+    SurvCurves()
   
   # Calculate per-arm statistics.
   p0 <- km0@Surv(tau)

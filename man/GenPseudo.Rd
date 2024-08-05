@@ -17,14 +17,18 @@ GenPseudo(
 
 \item{tau}{Truncation time.}
 
-\item{type}{Type of pseudo-value, select "prob" for probability and "rmst" for
-restricted mean survival time.}
+\item{type}{Type of pseudo-value, select "prob" for probability and "rmst"
+for restricted mean survival time.}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 }
+\value{
+Data.frame including the influence function and pseudo-value for each
+observation.
+}
 \description{
-Generates pseudo-values for each patient as the target parameter plus
-the influence function.
+Generates pseudo-values for each patient as the target parameter plus the
+influence function.
 }

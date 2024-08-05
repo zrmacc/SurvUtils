@@ -12,8 +12,6 @@
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-#' 
-#' @importFrom dplyr "%>%"
 #' @export
 
 CalcHR <- function(

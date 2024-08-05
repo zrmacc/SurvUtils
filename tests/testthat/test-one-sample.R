@@ -1,6 +1,39 @@
 library(testthat)
 
-test_that("Test percentile calculation", {
+test_that("Test incidence calculation.", {
+  
+  withr::local_seed(101)
+  
+  lambda_event <- 1.0
+  lambda_death <- 1.0
+  
+  data <- GenCRData(
+    base_death_rate = lambda_death,
+    base_event_rate = lambda_event,
+    censoring_rate = 0.25,
+    n = 1e3
+  )
+  
+  # Assuming $T \sim Exp(\lambda_{T})$ and $D \sim Exp(\lambda_{D})$,
+  # F_{T}(\tau) = P(T \leq \tau, T < D) = 
+  # (\lambda_{D} / \lambda) * (1 - \exp(-\tau \lambda))
+  # where \lambda = \lambda_{T} + \lambda_{D}.
+  
+  tau <- 1.0
+  lambda <- lambda_event + lambda_death
+  exp <- lambda_event / lambda * (1 - exp(-tau * lambda))
+  obs <- OneSampleCIC(data, tau = tau)
+  expect_equal(obs$rate, exp, tolerance = 0.05)
+  
+  tau <- 2.0
+  exp <- lambda_event / lambda * (1 - exp(-tau * lambda))
+  obs <- OneSampleCIC(data, tau = tau)
+  expect_equal(obs$rate, exp, tolerance = 0.05)
+  
+})
+
+
+test_that("Test percentile calculation.", {
   
   withr::local_seed(101)
   
@@ -13,7 +46,7 @@ test_that("Test percentile calculation", {
 })
 
 
-test_that("Test RMST calculation", {
+test_that("Test RMST calculation.", {
   
   data <- data.frame(
     time = c(1, 1, 2, 2, 3, 3, 4, 4),

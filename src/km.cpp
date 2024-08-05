@@ -1,79 +1,8 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
+#include "utils.h"
 
 // For debugging: Rcpp::Rcout << << std::endl; 
-
-// ----------------------------------------------------------------------------
-// Utilities.
-// ----------------------------------------------------------------------------
-
-// Check if Value is in Vector
-// 
-// @param a Value to search for.
-// @param b Vector to search.
-// @return bool.
-bool IsIn(const double &a, const arma::vec &b) {
-  
-  for(int i=0; i<b.size(); i++) {
-    if(b(i) == a) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-// Union
-// 
-// @param a Vector.
-// @param b Vector.
-// @return Vector.
-arma::colvec Union(const arma::colvec &a, arma::colvec b) {
-  
-  // Sets all elements of b that are in a to a value that is known
-  // to be in a. Then concatenates a and b and filters to unique values.
-  
-  double a0 = a(0);
-  for(int i=0; i<b.size(); i++) {
-    if(IsIn(b(i), a)){
-      b(i) = a0;
-    }
-  }
-
-  arma::colvec out = arma::unique(arma::join_cols(a, b));
-  return out;
-}
-
-
-// Truncate
-//
-// @param time Vector of time points.
-// @param tau Truncation time.
-// @return Truncated vector.
-arma::colvec Truncate(const arma::colvec &time, const double tau) {
-  arma::colvec unique_times = arma::unique(time);
-  for(int i=0; i<unique_times.size(); i++){
-    if(unique_times(i) > tau){
-      unique_times(i) = tau;
-    }
-  }
-  arma::colvec out = arma::unique(unique_times);
-  return out;
-}
-
-
-// Add Leading Value
-//
-// @param x Input vector.
-// @param value Value to insert at leading position.
-arma::colvec AddLeadVal(const arma::colvec &x, const double value) {
-  const int len = x.n_elem;
-  arma::colvec out = arma::zeros(len + 1);
-  out(0) = value;
-  out.subvec(1, len) = x;
-  return out;
-}
-
 
 // ----------------------------------------------------------------------------
 // Kaplan Meier.
@@ -83,10 +12,10 @@ arma::colvec AddLeadVal(const arma::colvec &x, const double value) {
 //  
 // Constructs a matrix with evaluation times as rows, and 4 columns:
 // \itemize{
-// \item{time}{Evaluation times.}
-// \item{nar}{Number at risk.}
-// \item{surv}{Survival probability.}
-// \item{haz}{Hazard.}
+// \item{time: Evaluation times.}
+// \item{nar: Number at risk.}
+// \item{surv: Survival probability.}
+// \item{haz: Hazard.}
 // }
 //
 // @param eval_times Evaluation times.
@@ -184,7 +113,7 @@ SEXP RMST(
   double trunc_time = max_time;
   if (tau.isNotNull()) {
     trunc_time = Rcpp::as<double>(tau);
-    unique_times = Truncate(unique_times, trunc_time);
+    unique_times = Truncate(unique_times, trunc_time, false);
   }
 
   // Add leading zero.
@@ -195,10 +124,10 @@ SEXP RMST(
   const arma::mat km_mat = KaplanMeier(unique_times, status, time);
   arma::colvec km_times = km_mat.col(0);
   arma::colvec surv = km_mat.col(2);
-
+  
   // Rcpp::Rcout << km_times << std::endl; 
   // Rcpp::Rcout << surv << std::endl; 
-  
+
   // Calculate AUC.
   const arma::colvec delta_t = arma::diff(unique_times);
   const arma::colvec integrand = surv.subvec(0, n_times - 2);
@@ -299,11 +228,11 @@ double IntegrateKM(
 // @param status Subject status.
 // @param time Subject observation times.
 // @return Matrix with subjects as rows and unique times as columns.
-arma::mat CalcMartingale(
-    const arma::colvec eval_times,    
-    const arma::colvec haz,
-    const arma::colvec status,
-    const arma::colvec time
+arma::mat CalcMartingaleKM(
+    const arma::colvec &eval_times,    
+    const arma::colvec &haz,
+    const arma::colvec &status,
+    const arma::colvec &time
 ) {
   
   // Subjects.
@@ -361,11 +290,10 @@ arma::mat CalcMartingale(
 //' @param trunc_time Truncation time.
 //' @return Numeric vector of influence function values for each observation.
 // [[Rcpp::export]]
-
 SEXP InfluenceKM(
     const arma::colvec status,
     const arma::colvec time,
-    const float trunc_time 
+    const double trunc_time 
 ){
 
 	// Evaluation times.
@@ -381,7 +309,7 @@ SEXP InfluenceKM(
 	double st = arma::as_scalar(surv.elem(arma::find(eval_times == trunc_time)));
 
 	// Martingales.
-	const arma::mat dm = CalcMartingale(eval_times, haz, status, time);
+	const arma::mat dm = CalcMartingaleKM(eval_times, haz, status, time);
 	// Rcpp::Rcout << dm << std::endl; 
 
 	// Influence functions.
@@ -408,11 +336,10 @@ SEXP InfluenceKM(
 //' @param trunc_time Truncation time.
 //' @return Numeric vector of influence function values for each observation.
 // [[Rcpp::export]]
-
 SEXP InfluenceRMST(
     const arma::colvec status,
     const arma::colvec time,
-    const float trunc_time 
+    const double trunc_time 
 ){
 
   // Unique times.
@@ -434,7 +361,7 @@ SEXP InfluenceRMST(
   const arma::colvec par = nar / n_subj;
   
   // Calculate martingales.
-  arma::mat mart = CalcMartingale(km_times, haz, status, time);
+  arma::mat mart = CalcMartingaleKM(km_times, haz, status, time);
   mart = mart.t();
   
   // Calculate mu;

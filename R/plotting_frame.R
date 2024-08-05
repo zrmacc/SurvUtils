@@ -27,7 +27,7 @@ OneSampleSurvFrame <- function(
       status = {{status_name}},
       time = {{time_name}}
     )
-  km <- GetCurves(df)
+  km <- SurvCurves(df)
   
   # Time grid.
   if (is.null(tau)) {
@@ -219,7 +219,7 @@ OneSampleCHFrame <- function(
       status = {{status_name}},
       time = {{time_name}}
     )
-  ch <- GetCurves(df)
+  ch <- SurvCurves(df)
   
   # Time grid.
   if (is.null(tau)) {

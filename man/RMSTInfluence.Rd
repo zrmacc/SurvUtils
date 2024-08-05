@@ -4,7 +4,7 @@
 \alias{RMSTInfluence}
 \title{RMST Influence}
 \usage{
-RMSTInfluence(data, tau, status_name = "status", time_name = "time")
+RMSTInfluence(data, tau = NULL, status_name = "status", time_name = "time")
 }
 \arguments{
 \item{data}{Data.frame.}

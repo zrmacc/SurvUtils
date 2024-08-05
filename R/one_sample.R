@@ -1,5 +1,5 @@
 # Purpose: One-sample analysis.
-# Updated: 2022-08-07
+# Updated: 2024-08-04
 
 # -----------------------------------------------------------------------------
 
@@ -11,7 +11,6 @@
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-#' @importFrom dplyr "%>%"
 #' @export
 OneSampleRates <- function(
     data,
@@ -31,13 +30,58 @@ OneSampleRates <- function(
     tau <- max(df$time)
   }
 
-  km <- GetCurves(df, alpha = alpha)
+  km <- SurvCurves(df, alpha = alpha)
   out <- data.frame(
     tau = tau,
     rate = km@Surv(tau),
     se = sqrt(km@SurvVar(tau)),
     lower = km@SurvLower(tau),
     upper = km@SurvUpper(tau)
+  )
+  return(out)
+}
+
+
+# -----------------------------------------------------------------------------
+
+#' One Sample Cumulative Incidence Curve
+#' 
+#' For calculating cumulative incidence in the presence in the presence of a 
+#' competing risk, status is assumed to have values of 0 for censoring, 1 for
+#' the event of interest, and 2 for the competing risk.
+#' 
+#' @param data Data.frame. 
+#' @param tau Truncation time.
+#' @param alpha Type I error.
+#' @param status_name Name of status column.
+#' @param time_name Name of time column.
+#' @return Data.frame.
+#' @export
+OneSampleCIC <- function(
+    data,
+    tau = NULL,
+    alpha = 0.05,
+    status_name = "status",
+    time_name = "time"
+) {
+  
+  # Format data.
+  df <- data %>%
+    dplyr::rename(
+      status = {{status_name}},
+      time = {{time_name}}
+    )
+  if (is.null(tau)) {
+    tau <- max(df$time)
+  }
+  
+  cic <- CICurves(df, alpha = alpha)
+  out <- data.frame(
+    tau = tau,
+    rate = cic@CIC(tau),
+    se = sqrt(cic@CICVar(tau)),
+    lower = cic@CICLower(tau),
+    upper = cic@CICUpper(tau)
   )
   return(out)
 }
@@ -119,7 +163,6 @@ OneSamplePercentiles <- function(
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @return Data.frame.
-#' @importFrom dplyr "%>%"
 #' @export
 OneSampleRMST <- function(
     data,

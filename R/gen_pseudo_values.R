@@ -1,4 +1,5 @@
 # Purpose: Generate pseudo-values.
+# Updated: 2024-08-04
 
 #' Generate Pseudo-values
 #' 
@@ -11,8 +12,8 @@
 #'   for restricted mean survival time.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Numeric vector of pseudo-values, corresponding to the rows of the
-#'   data.frame.
+#' @return Data.frame including the influence function and pseudo-value for each
+#'   observation.
 #' @export 
 GenPseudo <- function(
   data,
@@ -22,11 +23,6 @@ GenPseudo <- function(
   time_name = "time"
 ) {
   
-  # Check type.
-  if (! (type %in% c("prob", "rmst"))) {
-    stop("Select type from among: 'prob', 'rmst'.")
-  }
-  
   # Format data.
   df <- data %>%
     dplyr::rename(
@@ -34,36 +30,41 @@ GenPseudo <- function(
       time = {{time_name}}
     )
   
-  # Truncation time.
-  if (is.null(tau)) {
+  # Evaluation time.
+  tmax <- max(df$time)
+  if (is.null(tau) || tau > tmax) {
+    if (!is.null(tau) && tau > tmax) {
+      warning("tau cannot exceed the maximum observation time.")
+    }
     tau <- max(df$time)
   }
   
   # Calculate parameter.
-  if (type == "prob") {
+  if (type == "cic") {
+    
+    param <- OneSampleCIC(df, tau = tau)
+    param <- param$rate
+    out <- CICInfluence(df, tau = tau)
+
+  } else if (type == "prob") {
     
     param <- OneSampleRates(df, tau = tau)
     param <- param$rate
+    out <- KMInfluence(df, tau = tau)
     
   } else if(type == "rmst") {
     
     param <- OneSampleRMST(df, tau = tau)
     param <- param$auc
-    
-  }
-  
-  # Calculate influence function.
-  if (type == "prob") {
-    
-    inf <- KMInfluence(df, tau = tau)
+    out <- RMSTInfluence(df, tau = tau)
     
   } else {
     
-    inf <- RMSTInfluence(df, tau = tau)
+    stop("type must be selected from among: cic, prob, rmst")
     
   }
   
-  # Return pseudo-values.
-  pseudo <- param + inf
-  return(pseudo)
+  # Output.
+  out$pseudo <- param + out$influence
+  return(out)
 }

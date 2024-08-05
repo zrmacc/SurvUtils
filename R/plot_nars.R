@@ -18,7 +18,7 @@ OneSampleNARs <- function(
     status_name = "status",
     time_name = "time"
 ) {
-  km <- GetCurves(
+  km <- SurvCurves(
     data,
     status_name = status_name,
     time_name = time_name

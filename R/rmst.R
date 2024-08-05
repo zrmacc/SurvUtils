@@ -13,7 +13,7 @@
 #' @export
 RMSTInfluence <- function(
     data,
-    tau,
+    tau = NULL,
     status_name = "status",
     time_name = "time"
 ) {
@@ -26,10 +26,22 @@ RMSTInfluence <- function(
       time = {{time_name}}
     )
   
-  inf <- InfluenceRMST(
+  # Evaluation time.
+  tmax <- max(df$time)
+  if (is.null(tau) || tau > tmax) {
+    if (!is.null(tau) && tau > tmax) {
+      warning("tau cannot exceed the maximum observation time.")
+    }
+    tau <- max(df$time)
+  }
+  
+  # Calculate influence function.
+  influence <- InfluenceRMST(
     status = df$status,
     time = df$time,
     trunc_time = tau
   )
-  return(as.numeric(inf))
+  
+  data$influence <- as.numeric(influence)
+  return(data)
 }

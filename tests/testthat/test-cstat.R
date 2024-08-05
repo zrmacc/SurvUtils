@@ -85,7 +85,8 @@ test_that("Test simple c-stat calcualtion.", {
   x2 <- rnorm(n)
   data <- SurvUtils::GenData(
     covariates = cbind(x1, x2),
-    beta_event = c(1.0, -1.0)
+    beta_event = c(1.0, -1.0),
+    simple = FALSE
   )
   
   eval <- CompreCoxCstat(

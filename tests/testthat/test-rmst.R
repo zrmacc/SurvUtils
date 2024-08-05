@@ -64,7 +64,8 @@ test_that("Test influence function calculation.", {
   }
   
   # Observed.
-  obs_psi <- RMSTInfluence(data, tau = tau)
-  expect_equal(obs_psi, exp_psi)
+  obs <- RMSTInfluence(data, tau = tau)
+  expect_equal(obs$influence, exp_psi)
   
 })
+

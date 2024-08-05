@@ -9,7 +9,6 @@
 #' @param time_name Name of time column.
 #' @param alpha Type I error, for confidence intervals.
 #' @return Data.frame.
-#' @importFrom dplyr "%>%"
 #' @export
 TabulateKM <- function(
     data,
@@ -93,9 +92,8 @@ TabulateKM <- function(
 #' @param time_name Name of time column.
 #' @importFrom stats stepfun
 #' @export
-#' @return stepfun.
-
-GetCurves <- function(
+#' @return OneSampleSurv object.
+SurvCurves <- function(
     data,
     alpha = 0.05,
     status_name = "status",
@@ -131,7 +129,7 @@ GetCurves <- function(
   
   # Output.
   out <- methods::new(
-    "OneSample",
+    "OneSampleSurv",
     CumHaz = fn[["cum_haz"]],
     CumHazVar = fn[["cum_haz_var"]],
     CumHazLower = fn[["cum_haz_lower"]],
@@ -157,12 +155,11 @@ GetCurves <- function(
 #' @param tau Truncation time at which to calculate the influence.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Numeric vector.
+#' @return Data.frame with an additional column, `influence`.
 #' @export
-
 KMInfluence <- function(
     data,
-    tau,
+    tau = NULL,
     status_name = "status",
     time_name = "time"
 ) {
@@ -175,11 +172,23 @@ KMInfluence <- function(
       time = {{time_name}}
     )
   
+  # Evaluation time.
+  tmax <- max(df$time)
+  if (is.null(tau) || tau > tmax) {
+    if (!is.null(tau) && tau > tmax) {
+      warning("tau cannot exceed the maximum observation time.")
+    }
+    tau <- max(df$time)
+  }
+  
+  # Calculate influence function.
   influence <- InfluenceKM(
     status = df$status,
     time = df$time,
     trunc_time = tau
   )
-  return(as.numeric(influence))
+  
+  data$influence <- as.numeric(influence)
+  return(data)
 }
 
