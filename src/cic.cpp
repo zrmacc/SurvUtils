@@ -34,8 +34,7 @@ struct CICTab {
 // @param eval_times Unique times at which to tabulate events.
 // @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
 // @param time Observation time.
-// @return Data.frame with the censorings, deaths, and events occurring
-//   at each distinct time point. 
+// @return Cumulative incience curve in a CICTab structure. 
 CICTab TabulateEventsCpp(
   const arma::colvec &eval_times,
   const arma::colvec &status,
@@ -115,7 +114,7 @@ CICTab TabulateEventsCpp(
 //' 
 //' @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
 //' @param time Observation time.
-//' @return Tabulate cumulative incidence curve. 
+//' @return Data.frame containing the tabulated cumulative incidence curve.
 // [[Rcpp::export]]
 SEXP CalcCIC(const arma::vec &status, const arma::vec &time) {
   // Tabulate events and numbers at risk.
@@ -183,7 +182,7 @@ SEXP CalcCIC(const arma::vec &status, const arma::vec &time) {
 // @param eval_times Unique times at which to evaluate the martingale.
 // @param status Subject status.
 // @param time Subject observation times.
-// @return Matrix with subjects as rows and unique times as columns.
+// @return Matrix with subjects as rows and evaluations times as columns.
 arma::mat CalcMartingaleCI(
     const int code,
     const arma::colvec &cshaz,
@@ -242,7 +241,7 @@ arma::mat CalcMartingaleCI(
 //' @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
 //' @param time Observation time.
 //' @param trunc_time Time at which to evaluate the influence function.
-//' @return Tabulate cumulative incidence curve. 
+//' @return Vector of per-subject influence function evaluations.
 // [[Rcpp::export]]
 SEXP InfluenceCIC(
   const arma::colvec &status,

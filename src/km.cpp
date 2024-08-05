@@ -227,7 +227,7 @@ double IntegrateKM(
 // @param haz Value of the hazard at each unique time.
 // @param status Subject status.
 // @param time Subject observation times.
-// @return Matrix with subjects as rows and unique times as columns.
+// @return Matrix with subjects as rows and evaluation times as columns.
 arma::mat CalcMartingaleKM(
     const arma::colvec &eval_times,    
     const arma::colvec &haz,
