@@ -12,7 +12,7 @@ CalcCIC(status, time)
 \item{time}{Observation time.}
 }
 \value{
-Tabulate cumulative incidence curve.
+Data.frame containing the tabulated cumulative incidence curve.
 }
 \description{
 Estimate the cumulative incidence curve. Specifically:

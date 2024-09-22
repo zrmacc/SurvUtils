@@ -7,7 +7,7 @@ output:
     keep_md: TRUE
 --- 
 
-# Functions for Survival Analysis
+# Utility Functions for Survival Analysis
 
 Zachary R. McCaw <br>
 Updated: 2024-08-04

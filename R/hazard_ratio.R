@@ -37,6 +37,7 @@ CalcHR <- function(
   # Extract hazard ratio.
   hazard_ratio <- data.frame(
     "hr" = cox_model_summary$conf.int[1],
+    "se_log_hr" = cox_model_summary$coefficients[3],
     "lower" = cox_model_summary$conf.int[3],
     "upper" = cox_model_summary$conf.int[4],
     "p" = cox_model_summary$coefficients[5]

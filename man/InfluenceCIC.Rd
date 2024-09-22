@@ -14,7 +14,7 @@ InfluenceCIC(status, time, trunc_time)
 \item{trunc_time}{Time at which to evaluate the influence function.}
 }
 \value{
-Tabulate cumulative incidence curve.
+Vector of per-subject influence function evaluations.
 }
 \description{
 Influence function for the cumulative incidence of the status == 1 event.

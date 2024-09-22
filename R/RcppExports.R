@@ -8,7 +8,7 @@
 #' 
 #' @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
 #' @param time Observation time.
-#' @return Tabulate cumulative incidence curve. 
+#' @return Data.frame containing the tabulated cumulative incidence curve.
 CalcCIC <- function(status, time) {
     .Call(`_SurvUtils_CalcCIC`, status, time)
 }
@@ -20,7 +20,7 @@ CalcCIC <- function(status, time) {
 #' @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
 #' @param time Observation time.
 #' @param trunc_time Time at which to evaluate the influence function.
-#' @return Tabulate cumulative incidence curve. 
+#' @return Vector of per-subject influence function evaluations.
 InfluenceCIC <- function(status, time, trunc_time) {
     .Call(`_SurvUtils_InfluenceCIC`, status, time, trunc_time)
 }
