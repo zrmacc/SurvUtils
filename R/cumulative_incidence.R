@@ -3,15 +3,17 @@
 
 
 #' Tabulate Cumulative Incidence
-#' 
-#' Status should be coded as 0 for censoring, 1 for the event of interest, 
-#' and 2 for the competing risk (e.g. death).
-#' 
-#' @param data Data.frame.
+#'
+#' Builds a table of the cumulative incidence curve for the event of interest
+#' in the presence of a competing risk. Status: 0 = censoring, 1 = event of
+#' interest, 2 = competing risk (e.g. death).
+#'
+#' @param data Data.frame with time and status.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @param alpha Type I error, for confidence intervals.
-#' @return Data.frame.
+#' @param alpha Type I error level for confidence intervals (default 0.05).
+#' @return Data.frame with columns including \code{time}, \code{nar}, \code{cic_event},
+#'   \code{var_cic_event}, \code{se_cic_event}, \code{cic_event_lower}, \code{cic_event_upper}.
 #' @export
 TabulateCIC <- function(
     data,
@@ -24,8 +26,8 @@ TabulateCIC <- function(
   time <- status <- NULL
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Table.
@@ -49,18 +51,19 @@ TabulateCIC <- function(
 # -----------------------------------------------------------------------------
 
 #' Generate Cumulative Incidence Curves
-#' 
-#' Intended for data from a single sample. Status should be coded as 0 for
-#' censoring, 1 for the event of interest, and 2 for the competing risk (e.g.
-#' death).
-#' 
-#' @param data Data.frame.
-#' @param alpha Type I error.
+#'
+#' Fits the cumulative incidence curve for the event of interest in the presence
+#' of a competing risk and returns step functions for the CIC, variance, and
+#' confidence bounds. Status: 0 = censoring, 1 = event of interest, 2 = competing risk.
+#'
+#' @param data Data.frame with time and status.
+#' @param alpha Type I error level for confidence intervals (default 0.05).
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @importFrom stats stepfun
+#' @return Object of class \code{OneSampleCIC} with slots \code{CIC}, \code{CICVar},
+#'   \code{CICLower}, \code{CICUpper}, \code{NAR}, and \code{tmax}.
 #' @export
-#' @return OneSampleSurv object.
 CICurves <- function(
     data,
     alpha = 0.05,
@@ -71,8 +74,8 @@ CICurves <- function(
   # Format data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Tabulate cumulative incidence.
@@ -108,14 +111,17 @@ CICurves <- function(
 # -----------------------------------------------------------------------------
 
 #' Cumulative Incidence Influence
-#' 
-#' Calculate cumulative incidence influence function for each observation.
-#' 
-#' @param data Data.frame.
-#' @param tau Truncation time at which to calculate the influence.
+#'
+#' Calculates the influence function contribution for the cumulative incidence
+#' of the event of interest at \code{tau} for each observation. Status: 0 =
+#' censored, 1 = event of interest, 2 = competing risk.
+#'
+#' @param data Data.frame with time and status.
+#' @param tau Time at which the cumulative incidence is evaluated. Defaults to
+#'   the maximum observation time if NULL or if tau exceeds it.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame with an additional column, `influence`.
+#' @return Data.frame with the same rows as \code{data}, plus column \code{influence}.
 #' @export
 CICInfluence <- function(
     data,
@@ -128,8 +134,8 @@ CICInfluence <- function(
   time <- status <- NULL
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Evaluation time.

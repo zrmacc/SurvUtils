@@ -3,19 +3,22 @@
 
 
 #' Compare Cox Models
-#' 
-#' Compares Cox models based on two sets of predictors with respect to 
-#' their C-statistics via K-fold cross validation.
-#' 
-#' @param status Event status.
-#' @param time Event time.
-#' @param x1 Model matrix for the first model.
-#' @param x2 Model matrix for the second model.
-#' @param folds Cross validation folds.
-#' @param simple_cstat If TRUE uses the unweighted C-stat, otherwise
-#'   uses the inverse probability of censoring weighted C-stat.
+#'
+#' Compares two Cox models (different predictor sets) with respect to their
+#' C-statistics on held-out data via K-fold cross-validation. In each fold,
+#' models are fit on the training set and concordance is evaluated on the test set.
+#'
+#' @param status Event status (0 = censored, 1 = event).
+#' @param time Event or censoring time.
+#' @param x1 Model matrix or data.frame of predictors for the first (full) model.
+#' @param x2 Model matrix or data.frame of predictors for the second (reduced) model.
+#' @param folds Number of cross-validation folds.
+#' @param simple_cstat If TRUE, use the unweighted C-statistic; otherwise use the
+#'   inverse probability of censoring weighted C-statistic.
+#' @return Data.frame with one row per fold: \code{fold}, \code{cstat1}, \code{cstat2},
+#'   \code{diff} (cstat1 - cstat2), and \code{ratio} (cstat1 / cstat2).
 #' @export 
-CompreCoxCstat <- function(
+CompareCoxCstat <- function(
   status,
   time,
   x1,

@@ -24,10 +24,9 @@ RateRatio(
 \item{se_name}{Name of standard error column.}
 }
 \value{
-Data.frame
+Data.frame with one row: \code{stat} = "rr", \code{est}, \code{se}, \code{lower}, \code{upper}, \code{p}.
 }
 \description{
-Calculate the rate difference comparing two groups.
-Input data.frame should contain arm, taking values 0 and 1,
-the event rate, and the standard error.
+Calculate the rate ratio comparing two groups. Input data.frame should
+contain arm (0 and 1), event rate, and standard error.
 }

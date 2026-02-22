@@ -14,21 +14,23 @@ CompareRMSTs(
 )
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with arm, time, and status (0 = censored, 1 = event).}
 
-\item{alpha}{Type I error.}
+\item{alpha}{Type I error level for confidence intervals (default 0.05).}
 
-\item{arm_name}{Name of arm column.}
+\item{arm_name}{Name of arm column (values 0 and 1).}
 
 \item{status_name}{Name of status column.}
 
-\item{tau}{Truncation time.}
+\item{tau}{Restriction time. Defaults to the maximum observation time if NULL.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame.
+Object of class \code{TwoSample} with slots \code{Marginal} (per-arm
+RMST and se) and \code{Contrasts} (difference and ratio with est, se, lower, upper, p).
 }
 \description{
-Compare the restricted mean survival times of two treatment arms.
+Compares the restricted mean survival times (RMST) of two treatment arms
+up to time \code{tau}, with difference and ratio contrasts.
 }

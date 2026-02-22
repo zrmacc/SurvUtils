@@ -20,7 +20,7 @@ GenCRData(
 )
 }
 \arguments{
-\item{base_death_rate}{Baseline arrival for for death (the competing risk).}
+\item{base_death_rate}{Baseline arrival rate for death (the competing risk).}
 
 \item{beta_death}{Numeric vector of log rate ratios for the death rate.}
 
@@ -34,7 +34,7 @@ GenCRData(
 
 \item{frailty_variance}{Variance of the gamma frailty.}
 
-\item{min_death_rate}{Minimum subject-specific event rate. Must be non-negative.}
+\item{min_death_rate}{Minimum subject-specific death rate. Must be non-negative.}
 
 \item{min_event_rate}{Minimum subject-specific event rate. Must be positive.}
 
@@ -42,11 +42,15 @@ GenCRData(
 
 \item{simple}{Return only the index, time, and status? If FALSE, returns additional data.}
 
-\item{tau}{Truncation time.}
+\item{tau}{Truncation time (observation is administratively censored at tau).}
 }
 \value{
-Data.frame.
+Data.frame. If \code{simple = TRUE}, columns are \code{idx}, \code{time}, \code{status}
+(0 = censored, 1 = event of interest, 2 = competing risk). If \code{simple = FALSE}, includes
+additional simulation columns.
 }
 \description{
-Generate Competing Risks Data
+Simulates competing risks data with exponential event and death times and
+independent exponential censoring. Status is 0 = censored, 1 = event of
+interest, 2 = competing risk (e.g. death).
 }

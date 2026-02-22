@@ -9,18 +9,20 @@ Tabulate Cumulative Incidence}
 TabulateCIC(data, status_name = "status", time_name = "time", alpha = 0.05)
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status.}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 
-\item{alpha}{Type I error, for confidence intervals.}
+\item{alpha}{Type I error level for confidence intervals (default 0.05).}
 }
 \value{
-Data.frame.
+Data.frame with columns including \code{time}, \code{nar}, \code{cic_event},
+\code{var_cic_event}, \code{se_cic_event}, \code{cic_event_lower}, \code{cic_event_upper}.
 }
 \description{
-Status should be coded as 0 for censoring, 1 for the event of interest,
-and 2 for the competing risk (e.g. death).
+Builds a table of the cumulative incidence curve for the event of interest
+in the presence of a competing risk. Status: 0 = censoring, 1 = event of
+interest, 2 = competing risk (e.g. death).
 }

@@ -173,7 +173,7 @@ setClass(
 #'
 #' Print method for objects of class \code{TwoSample}.
 #'
-#' @param x An object of class \code{TwoSamples}.
+#' @param x An object of class \code{TwoSample}.
 #' @param ... Unused.
 #' @export
 print.TwoSample <- function (x, ...) {

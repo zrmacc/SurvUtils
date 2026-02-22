@@ -2,7 +2,7 @@
 % Please edit documentation in R/one_sample.R
 \name{OneSampleRMST}
 \alias{OneSampleRMST}
-\title{One Sample RMST}
+\title{One Sample Restricted Mean Survival Time}
 \usage{
 OneSampleRMST(
   data,
@@ -13,19 +13,22 @@ OneSampleRMST(
 )
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status (0 = censored, 1 = event).}
 
-\item{tau}{Truncation time.}
+\item{tau}{Restriction time. Defaults to the maximum observation time if NULL.}
 
-\item{alpha}{Type I error.}
+\item{alpha}{Type I error level for the confidence interval (default 0.05).}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame.
+Data.frame with columns \code{tau}, \code{auc} (RMST), \code{se},
+\code{lower}, \code{upper}.
 }
 \description{
-One Sample RMST
+Estimates the restricted mean survival time (RMST) up to \code{tau}, i.e. the
+area under the survival curve from 0 to tau, with standard error and
+confidence interval.
 }

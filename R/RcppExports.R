@@ -8,7 +8,6 @@
 #' 
 #' @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
 #' @param time Observation time.
-#' @return Data.frame containing the tabulated cumulative incidence curve.
 CalcCIC <- function(status, time) {
     .Call(`_SurvUtils_CalcCIC`, status, time)
 }

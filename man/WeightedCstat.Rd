@@ -14,24 +14,25 @@ WeightedCstat(
 )
 }
 \arguments{
-\item{train_data}{Data for estimating the censoring distribution. Should
-include status and time.}
+\item{train_data}{Data for estimating the censoring distribution. Must
+include \code{status} and \code{time}.}
 
-\item{test_data}{Data for evaluating the risk score. Should include risk,
-stats, and time.}
+\item{test_data}{Data for evaluating the risk score. Must include \code{risk},
+\code{status}, and \code{time}.}
 
 \item{risk_name}{Name of the risk column.}
 
 \item{status_name}{Name of status column.}
 
-\item{tau}{Truncation time.}
+\item{tau}{Truncation time; default is the 95th percentile of \code{train_data$time}.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame.
+Numeric weighted C-statistic (between 0 and 1).
 }
 \description{
-Calculate the C-statistic in the presence of censoring using the method of:
+C-statistic in the presence of censoring using inverse probability of
+censoring weighting. See Uno et al. (2011),
 \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3079915/}.
 }

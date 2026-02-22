@@ -46,6 +46,18 @@ test_that("Test percentile calculation.", {
 })
 
 
+test_that("Test OneSampleRates (event rate at tau).", {
+  withr::local_seed(106)
+  # For exponential(1), P(T <= tau) = 1 - exp(-tau). At tau=1, rate = 1 - exp(-1).
+  data <- GenData(base_event_rate = 1.0, n = 1e3, tau = 5)
+  obs <- OneSampleRates(data, tau = 1.0)
+  expect_equal(obs$tau, 1.0)
+  expect_equal(obs$rate, 1 - exp(-1), tolerance = 0.05)
+  expect_true(obs$lower < obs$rate)
+  expect_true(obs$upper > obs$rate)
+  expect_true(length(obs$se) == 1 && obs$se > 0)
+})
+
 test_that("Test RMST calculation.", {
   
   data <- data.frame(

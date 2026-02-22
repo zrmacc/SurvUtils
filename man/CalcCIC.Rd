@@ -11,9 +11,6 @@ CalcCIC(status, time)
 
 \item{time}{Observation time.}
 }
-\value{
-Data.frame containing the tabulated cumulative incidence curve.
-}
 \description{
 Estimate the cumulative incidence curve. Specifically:
 \eqn{F_{1}(t) = P(T \leq t, \delta = 1).}

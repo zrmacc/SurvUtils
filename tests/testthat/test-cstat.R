@@ -1,6 +1,6 @@
 library(testthat)
 
-test_that("Test simple c-stat calcualtion.", {
+test_that("Test simple c-stat calculation.", {
   
   data <- data.frame(
     time = c(0, 1, 2, 3),
@@ -75,7 +75,7 @@ test_that("Test weighted C-stat calculation.", {
 })
 
 
-test_that("Test simple c-stat calcualtion.", {
+test_that("Test CompareCoxCstat.", {
   
   withr::local_seed(101)
   
@@ -89,7 +89,7 @@ test_that("Test simple c-stat calcualtion.", {
     simple = FALSE
   )
   
-  eval <- CompreCoxCstat(
+  eval <- CompareCoxCstat(
     status = data$status,
     time = data$time,
     x1 = data %>% dplyr::select(x1, x2),

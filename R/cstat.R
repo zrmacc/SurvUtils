@@ -4,13 +4,22 @@
 
 #' Calculate Unweighted Concordance
 #'
-#' @param data Data frame including risk, status, time.
-#' @param pseudo_counts Include pseudo counts?
+#' Computes the C-statistic (concordance index): the proportion of event-time
+#' pairs for which the risk score correctly orders the two subjects (higher
+#' risk for the subject with the earlier event). Pairs with tied event times
+#' contribute 0.5 to the numerator and 1 to the denominator when
+#' \code{pseudo_counts = TRUE}.
+#'
+#' @param data Data.frame including risk score and \code{status}, \code{time}.
+#' @param pseudo_counts If TRUE, add 0.5 to the numerator and 1 to the
+#'   denominator for pairs with tied event times; if FALSE, such pairs are
+#'   excluded.
 #' @param risk_name Name of the risk column.
 #' @param status_name Name of status column.
-#' @param tau Truncation time.
+#' @param tau Truncation time; only pairs with event time < tau are used.
+#'   Defaults to the maximum event time if NULL.
 #' @param time_name Name of time column.
-#' @return Data.frame.
+#' @return Numeric C-statistic (between 0 and 1).
 #' @export
 Cstat <- function(
     data,
@@ -30,9 +39,9 @@ Cstat <- function(
   risk <- status <- time <- NULL
   df <- data %>%
     dplyr::rename(
-      risk = {{risk_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      risk = dplyr::all_of(risk_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     ) %>%
     dplyr::select(risk, status, time)
   
@@ -68,19 +77,20 @@ Cstat <- function(
 
 #' Calculate Weighted Concordance
 #'
-#' Calculate the C-statistic in the presence of censoring using the method of:
+#' C-statistic in the presence of censoring using inverse probability of
+#' censoring weighting. See Uno et al. (2011),
 #' <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3079915/>.
 #'
-#' @param train_data Data for estimating the censoring distribution. Should
-#'   include status and time.
-#' @param test_data Data for evaluating the risk score. Should include risk,
-#'   stats, and time.
+#' @param train_data Data for estimating the censoring distribution. Must
+#'   include \code{status} and \code{time}.
+#' @param test_data Data for evaluating the risk score. Must include \code{risk},
+#'   \code{status}, and \code{time}.
 #' @param risk_name Name of the risk column.
 #' @param status_name Name of status column.
-#' @param tau Truncation time.
+#' @param tau Truncation time; default is the 95th percentile of \code{train_data$time}.
 #' @param time_name Name of time column.
-#' @return Data.frame.
-#' 
+#' @return Numeric weighted C-statistic (between 0 and 1).
+#'
 #' @importFrom dplyr "%>%"
 #' @export
 WeightedCstat <- function(
@@ -101,8 +111,8 @@ WeightedCstat <- function(
   status <- time <- NULL
   df0 <- train_data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     ) %>%
     dplyr::select(status, time) %>%
     dplyr::mutate(status = 1 - status)
@@ -113,9 +123,9 @@ WeightedCstat <- function(
   risk <- NULL
   df1 <- test_data %>%
     dplyr::rename(
-      risk = {{risk_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      risk = dplyr::all_of(risk_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     ) %>%
     dplyr::select(risk, status, time)
   

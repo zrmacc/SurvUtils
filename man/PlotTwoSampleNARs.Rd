@@ -18,7 +18,7 @@ PlotTwoSampleNARs(
 )
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with arm, time, and status.}
 
 \item{arm_name}{Name of arm column.}
 
@@ -43,5 +43,6 @@ PlotTwoSampleNARs(
 ggplot.
 }
 \description{
-Plot Two Sample Numbers at Risk
+Plots the number at risk at specified time points for two arms, for display
+below a two-sample Kaplan-Meier plot.
 }

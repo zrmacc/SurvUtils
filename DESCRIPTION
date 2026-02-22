@@ -1,6 +1,8 @@
 Package: SurvUtils
 Title: Utility Functions for Survival Analysis
-Version: 0.0.9.0
+Version: 0.0.9.1
+Author: Zachary McCaw [aut, cre]
+Maintainer: Zachary McCaw <zmccaw@alumni.harvard.edu>
 Authors@R: 
     person(given = "Zachary",
            family = "McCaw",
@@ -23,10 +25,12 @@ Suggests:
   testthat (>= 3.0.0),
   withr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 LinkingTo: 
   RcppArmadillo,
   Rcpp
+URL: https://github.com/zrmacc/SurvUtils
+BugReports: https://github.com/zrmacc/SurvUtils/issues
 VignetteBuilder: knitr
 VignetteEngine: knitr::rmarkdown
 VignetteIndexEntry: "Perturbation Bootstrap"

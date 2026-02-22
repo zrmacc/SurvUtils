@@ -15,23 +15,27 @@ CompareRates(
 )
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with arm, time, and status.}
 
-\item{alpha}{Type I error.}
+\item{alpha}{Type I error level for confidence intervals (default 0.05).}
 
-\item{arm_name}{Name of arm column.}
+\item{arm_name}{Name of arm column (values 0 and 1).}
 
-\item{return_surv}{Logical, TRUE for survival, FALSE for cumulative incidence.}
+\item{return_surv}{If TRUE, compare survival probabilities; if FALSE, compare
+event (failure) probabilities (1 - survival).}
 
 \item{status_name}{Name of status column.}
 
-\item{tau}{Truncation time.}
+\item{tau}{Time at which to evaluate the rate. Defaults to the maximum
+observation time if NULL.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame.
+Object of class \code{TwoSample} with slots \code{Marginal} (per-arm
+rate and se) and \code{Contrasts} (rd, rr, or with est, se, lower, upper, p).
 }
 \description{
-Compare the Kaplan-Meier survival or incidence rates of two treatment arms.
+Compares the Kaplan-Meier survival (or event) rates of two treatment arms
+at time \code{tau}, with risk difference, risk ratio, and odds ratio.
 }

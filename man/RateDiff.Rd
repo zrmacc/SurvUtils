@@ -2,7 +2,7 @@
 % Please edit documentation in R/compare_rates.R
 \name{RateDiff}
 \alias{RateDiff}
-\title{Calculate Rate Difference.}
+\title{Calculate Rate Difference}
 \usage{
 RateDiff(
   rates,
@@ -13,9 +13,9 @@ RateDiff(
 )
 }
 \arguments{
-\item{rates}{Data.frame.}
+\item{rates}{Data.frame with one row per arm.}
 
-\item{alpha}{Type I error.}
+\item{alpha}{Type I error level for the confidence interval (default 0.05).}
 
 \item{arm_name}{Name of arm column.}
 
@@ -24,10 +24,10 @@ RateDiff(
 \item{se_name}{Name of standard error column.}
 }
 \value{
-Data.frame.
+Data.frame with one row: \code{stat} = "rd", \code{est}, \code{se}, \code{lower}, \code{upper}, \code{p}.
 }
 \description{
-Calculate the rate difference comparing two groups.
-Input data.frame should contain arm, taking values 0 and 1,
-the event rate, and the standard error.
+Computes the difference in event rates between two groups (arm 1 minus arm 0)
+with a confidence interval and p-value. Input data.frame should contain arm
+(0 and 1), event rate, and standard error.
 }

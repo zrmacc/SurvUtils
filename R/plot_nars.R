@@ -36,10 +36,13 @@ OneSampleNARs <- function(
 # -----------------------------------------------------------------------------
 
 
-#' Plot Two Sample Numbers at Risk
-#' 
-#' @param data Data.frame.
-#' @param specified_nars Optional data.frame of specified NARs. Should include
+#' Plot One Sample Numbers at Risk
+#'
+#' Plots the number at risk at specified time points below a Kaplan-Meier or
+#' other survival plot.
+#'
+#' @param data Data.frame with time and status.
+#' @param specified_nars Optional data.frame of precomputed NARs. Should include
 #'   "time" and "nar". Overrides `data` if present.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
@@ -78,8 +81,8 @@ PlotOneSampleNARs <- function(
   if (is.null(specified_nars)) {
     data <- data %>%
       dplyr::rename(
-        status = {{status_name}},
-        time = {{time_name}}
+        status = dplyr::all_of(status_name),
+        time = dplyr::all_of(time_name)
       )
     df <- OneSampleNARs(data, x_breaks)
   } else {
@@ -130,8 +133,11 @@ PlotOneSampleNARs <- function(
 # -----------------------------------------------------------------------------
 
 #' Plot Two Sample Numbers at Risk
-#' 
-#' @param data Data.frame.
+#'
+#' Plots the number at risk at specified time points for two arms, for display
+#' below a two-sample Kaplan-Meier plot.
+#'
+#' @param data Data.frame with arm, time, and status.
 #' @param arm_name Name of arm column.
 #' @param specified_nars Optional data.frame of specified NARs. Should include
 #'   "arm", "time", and "nar". Overrides `data` if present.
@@ -173,9 +179,9 @@ PlotTwoSampleNARs <- function(
   if (is.null(specified_nars)) {
     data <- data %>%
       dplyr::rename(
-        arm = {{arm_name}},
-        status = {{status_name}},
-        time = {{time_name}}
+        arm = dplyr::all_of(arm_name),
+        status = dplyr::all_of(status_name),
+        time = dplyr::all_of(time_name)
       )
     df0 <- data %>%
       dplyr::filter(arm == 0) %>%

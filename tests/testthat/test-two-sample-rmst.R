@@ -1,3 +1,5 @@
+library(testthat)
+
 test_that("Test two sample RMST comparison.", {
   
   withr::local_seed(101)

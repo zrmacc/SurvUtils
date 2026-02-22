@@ -7,7 +7,7 @@
 CalcHR(data, arm_name = "arm", status_name = "status", time_name = "time")
 }
 \arguments{
-\item{data}{Reconstructed data.}
+\item{data}{Data.frame with arm (0 and 1), time, and status (0 = censored, 1 = event).}
 
 \item{arm_name}{Name of arm column.}
 
@@ -16,10 +16,11 @@ CalcHR(data, arm_name = "arm", status_name = "status", time_name = "time")
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame.
+Data.frame with one row: \code{hr}, \code{se_log_hr}, \code{lower}, \code{upper},
+\code{p}, and \code{schoenfeld_test} (p-value for proportional hazards).
 }
 \description{
-Calculate the hazard ratio, comparing two treatment arms, its confidence
-interval and p-value. Also provides the Schoenfeld residual test of the
-proportional hazards assumption.
+Fits a Cox model with a single arm covariate and returns the hazard ratio
+(arm 1 vs 0) with confidence interval and p-value. Also returns the
+Schoenfeld residual test for the proportional hazards assumption.
 }

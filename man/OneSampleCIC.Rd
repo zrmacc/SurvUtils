@@ -2,7 +2,7 @@
 % Please edit documentation in R/one_sample.R
 \name{OneSampleCIC}
 \alias{OneSampleCIC}
-\title{One Sample Cumulative Incidence Curve}
+\title{One Sample Cumulative Incidence at a Time Point}
 \usage{
 OneSampleCIC(
   data,
@@ -13,21 +13,22 @@ OneSampleCIC(
 )
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status.}
 
-\item{tau}{Truncation time.}
+\item{tau}{Time at which to evaluate the cumulative incidence. Defaults to
+the maximum observation time if NULL.}
 
-\item{alpha}{Type I error.}
+\item{alpha}{Type I error level for the confidence interval (default 0.05).}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame.
+Data.frame with columns \code{tau}, \code{rate}, \code{se}, \code{lower}, \code{upper}.
 }
 \description{
-For calculating cumulative incidence in the presence in the presence of a
-competing risk, status is assumed to have values of 0 for censoring, 1 for
-the event of interest, and 2 for the competing risk.
+Estimates the cumulative incidence of the event of interest at time \code{tau}
+in the presence of a competing risk. Status must be 0 = censored, 1 = event of
+interest, 2 = competing risk (e.g. death).
 }

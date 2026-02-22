@@ -2,99 +2,69 @@
 #include <RcppArmadillo.h>
 #include "utils.h"
 
-// For debugging: Rcpp::Rcout << << std::endl; 
-
 // ----------------------------------------------------------------------------
-// Main functions.
+// Cumulative incidence
 // ----------------------------------------------------------------------------
 
-// Structure to hold CIC.
 struct CICTab {
-  arma::vec time;
-  arma::vec censor;
-  arma::vec event;
-  arma::vec death;
-  arma::vec nar;
-  arma::vec death_rate;
-  arma::vec event_rate;
-  arma::vec haz;
-  arma::vec surv_init;
-  arma::vec cic_event;
-  arma::vec cic_death;
-  arma::vec var_cic_event;
-  arma::vec se_cic_event;
+  arma::colvec time;
+  arma::colvec censor;
+  arma::colvec event;
+  arma::colvec death;
+  arma::colvec nar;
+  arma::colvec death_rate;
+  arma::colvec event_rate;
+  arma::colvec haz;
+  arma::colvec surv_init;
+  arma::colvec cic_event;
+  arma::colvec cic_death;
+  arma::colvec var_cic_event;
+  arma::colvec se_cic_event;
 };
 
 
-// Tabulate Events Cpp
-// 
-// Tabulate the number at risk and the number of events at each unique
-// observation time.
-// 
-// @param eval_times Unique times at which to tabulate events.
-// @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
-// @param time Observation time.
-// @return Cumulative incience curve in a CICTab structure. 
 CICTab TabulateEventsCpp(
-  const arma::colvec &eval_times,
-  const arma::colvec &status,
-  const arma::colvec &time
-){
+  const arma::colvec& eval_times,
+  const arma::colvec& status,
+  const arma::colvec& time
+) {
+  const arma::uword n = time.n_elem;
+  arma::colvec unique_times = AddLeadVal(Union(eval_times, arma::unique(time)), 0);
+  const arma::uword n_time = unique_times.n_elem;
 
-  // Initial number at risk.
-  int n = time.n_elem;
+  arma::colvec n_cens = arma::zeros<arma::colvec>(n_time);
+  arma::colvec n_event = arma::zeros<arma::colvec>(n_time);
+  arma::colvec n_death = arma::zeros<arma::colvec>(n_time);
+  arma::colvec nar = arma::zeros<arma::colvec>(n_time);
+  double current_nar = static_cast<double>(n);
 
-  // Unique observation times.
-  arma::colvec unique_times = Union(eval_times, arma::unique(time));
-  unique_times = AddLeadVal(unique_times, 0);
-  int n_time = unique_times.n_elem;
-   
-  // Initialize output vectors.
-  arma::colvec n_cens  = arma::zeros(n_time);
-  arma::colvec n_event = arma::zeros(n_time);
-  arma::colvec n_death = arma::zeros(n_time);
-  arma::colvec nar = arma::zeros(n_time);
-   
-  // Set current number at risk.
-  int current_nar = n;
-  for(int i=0; i<n_time; i++) {
-     
-    double current_time = unique_times(i);
-    arma::colvec current_status = status.elem(arma::find(time == current_time));
-     
-    // Counts.
-    nar(i) = current_nar; // NAR at the beginning of the time step.
-    n_cens(i)  = arma::accu(current_status == 0.0);
-    n_event(i) = arma::accu(current_status == 1.0);
-    n_death(i) = arma::accu(current_status == 2.0);
-     
-    // Update number at risk for next interval.
+  for (arma::uword i = 0; i < n_time; ++i) {
+    const double t = unique_times(i);
+    const arma::uvec idx = arma::find(time == t);
+    nar(i) = current_nar;
+    n_cens(i) = arma::accu(status.elem(idx) == 0.0);
+    n_event(i) = arma::accu(status.elem(idx) == 1.0);
+    n_death(i) = arma::accu(status.elem(idx) == 2.0);
     current_nar -= n_cens(i) + n_event(i) + n_death(i);
-     
-  };
+  }
 
-  // Restrict to evaluation times.
-  int n_eval = eval_times.size();
+  const arma::uword n_eval = eval_times.n_elem;
   arma::colvec censor_out(n_eval);
   arma::colvec event_out(n_eval);
   arma::colvec death_out(n_eval);
   arma::colvec nar_out(n_eval);
+  arma::uword j = 0;
 
-  int j = 0;
-  for(int i=0; i<n_time; i++) {
-    
-    double current_time = unique_times(i);
-    if (IsIn(current_time, eval_times)) {
+  for (arma::uword i = 0; i < n_time && j < n_eval; ++i) {
+    if (IsIn(unique_times(i), eval_times)) {
       censor_out(j) = n_cens(i);
       event_out(j) = n_event(i);
       death_out(j) = n_death(i);
       nar_out(j) = nar(i);
-      j += 1;
-    };
+      ++j;
+    }
+  }
 
-  };
-   
-  // Output structure.
   CICTab out;
   out.time = eval_times;
   out.censor = censor_out;
@@ -102,7 +72,7 @@ CICTab TabulateEventsCpp(
   out.death = death_out;
   out.nar = nar_out;
   return out;
- };
+}
 
 
 // ----------------------------------------------------------------------------
@@ -114,41 +84,39 @@ CICTab TabulateEventsCpp(
 //' 
 //' @param status Status, coded as 0 for censoring, 1 for an event, 2 for death.
 //' @param time Observation time.
-//' @return Data.frame containing the tabulated cumulative incidence curve.
 // [[Rcpp::export]]
-SEXP CalcCIC(const arma::vec &status, const arma::vec &time) {
-  // Tabulate events and numbers at risk.
-  // int n = time.n_elem;
+SEXP CalcCIC(const arma::colvec& status, const arma::colvec& time) {
   arma::colvec eval_times = AddLeadVal(arma::unique(time), 0);
   CICTab out = TabulateEventsCpp(eval_times, status, time);
-  int n_time = out.time.n_elem;
-  out.death_rate = out.death / out.nar;
-  out.event_rate = out.event / out.nar;
-  out.haz = (out.death + out.event) / out.nar;
-  
-  // Survival at the beginning of the interval.
+  const arma::uword n_time = out.time.n_elem;
+
+  // Avoid division by zero when nar == 0 (e.g. past last event).
+  arma::colvec nar_safe = arma::clamp(out.nar, 1.0, arma::datum::inf);
+  out.death_rate = out.death / nar_safe;
+  out.event_rate = out.event / nar_safe;
+  out.haz = (out.death + out.event) / nar_safe;
+
   out.surv_init.set_size(n_time);
   out.surv_init(0) = 1.0;
-  arma::vec cumprod_haz = arma::cumprod(1.0 - out.haz);
-  out.surv_init.subvec(1, n_time - 1) = cumprod_haz.subvec(0, n_time - 2);
-  
-  // Cumulative incidence curves.
+  const arma::colvec cumprod_haz = arma::cumprod(1.0 - out.haz);
+  if (n_time > 1) {
+    out.surv_init.subvec(1, n_time - 1) = cumprod_haz.subvec(0, n_time - 2);
+  }
+
   out.cic_event = arma::cumsum(out.surv_init % out.event_rate);
   out.cic_death = arma::cumsum(out.surv_init % out.death_rate);
-  
-  // Variance calculation.
-  // See equation (3) of <https://pubmed.ncbi.nlm.nih.gov/9160487/>.
-  arma::vec var1 = arma::square(out.cic_event) % arma::cumsum(out.event / arma::square(out.nar)) +
-    arma::cumsum(arma::square(1.0 - out.cic_death) % out.event / arma::square(out.nar)) -
-    2.0 * out.cic_event % arma::cumsum((1.0 - out.cic_death) % out.event / arma::square(out.nar));
-  
-  arma::vec var2 = arma::square(out.cic_event) % arma::cumsum(out.death / arma::square(out.nar)) +
-    arma::cumsum(arma::square(out.cic_event) % out.death / arma::square(out.nar)) -
-    2.0 * out.cic_event % arma::cumsum(out.cic_event % out.death / arma::square(out.nar));
-  
-  // Output.
-  out.var_cic_event = (var1 + var2);
-  out.se_cic_event = arma::sqrt(var1 + var2);
+
+  const arma::colvec nar2 = arma::square(nar_safe);
+  arma::colvec var1 = arma::square(out.cic_event) % arma::cumsum(out.event / nar2) +
+    arma::cumsum(arma::square(1.0 - out.cic_death) % out.event / nar2) -
+    2.0 * out.cic_event % arma::cumsum((1.0 - out.cic_death) % out.event / nar2);
+  arma::colvec var2 = arma::square(out.cic_event) % arma::cumsum(out.death / nar2) +
+    arma::cumsum(arma::square(out.cic_event) % out.death / nar2) -
+    2.0 * out.cic_event % arma::cumsum(out.cic_event % out.death / nar2);
+
+  out.var_cic_event = var1 + var2;
+  out.se_cic_event = arma::sqrt(out.var_cic_event);
+
   return Rcpp::DataFrame::create(
     Rcpp::Named("time")=out.time,
     Rcpp::Named("nar")=out.nar,
@@ -184,50 +152,25 @@ SEXP CalcCIC(const arma::vec &status, const arma::vec &time) {
 // @param time Subject observation times.
 // @return Matrix with subjects as rows and evaluations times as columns.
 arma::mat CalcMartingaleCI(
-    const int code,
-    const arma::colvec &cshaz,
-    const arma::colvec &eval_times,    
-    const arma::colvec &status,
-    const arma::colvec &time
+    int code,
+    const arma::colvec& cshaz,
+    const arma::colvec& eval_times,
+    const arma::colvec& status,
+    const arma::colvec& time
 ) {
-  
-  // Subjects.
-  const int n = time.size();
-  
-  // Unique times.
-  const int n_times = eval_times.size();
-  
-  // Create a subject by evaluation times matrix, where
-  // dM[i, t] is the martingale increment for subject i at time t.
+  const arma::uword n = time.n_elem;
+  const arma::uword n_times = eval_times.n_elem;
   arma::mat dm = arma::zeros(n, n_times);
-  
-  // Loop over subjects.
-  for(int i=0; i<n; i++) {
-    
-    // Time and status for the focus subject.
+
+  for (arma::uword i = 0; i < n; ++i) {
     const double subj_time = time(i);
-    const int subj_status = status(i);
-
-    // Loop over times.
-    for(int j=0; j<n_times; j++) {
-      
-      const double current_time = eval_times(j);
-      const double current_haz = cshaz(j);
-      
-      // Add dN_{ji}(t).
-      if(current_time == subj_time && subj_status == code) {
-        dm(i, j) += 1;
-      }
-      
-      // Add -Y_{i}(t)dAj(t).
-      if(current_time <= subj_time) {
-        dm(i, j) -= current_haz;
-      } else {
-        break;  
-      }
-
-    } // End loop over times.
-  } // End loop over subjects.
+    const double subj_status = status(i);
+    for (arma::uword j = 0; j < n_times; ++j) {
+      if (eval_times(j) == subj_time && subj_status == static_cast<double>(code)) dm(i, j) += 1.0;
+      if (eval_times(j) <= subj_time) dm(i, j) -= cshaz(j);
+      else break;
+    }
+  }
   return dm;
 }
 
@@ -244,64 +187,47 @@ arma::mat CalcMartingaleCI(
 //' @return Vector of per-subject influence function evaluations.
 // [[Rcpp::export]]
 SEXP InfluenceCIC(
-  const arma::colvec &status,
-  const arma::colvec &time,
-  const double trunc_time 
-){
-
-  // Evaluation times.
+  const arma::colvec& status,
+  const arma::colvec& time,
+  double trunc_time
+) {
   arma::colvec eval_times = Truncate(arma::unique(time), trunc_time);
-
-  // Tabulate events and numbers at risk.
-  int n = time.n_elem;
+  const arma::uword n = time.n_elem;
   CICTab tab = TabulateEventsCpp(eval_times, status, time);
+  const arma::uword n_time = tab.time.n_elem;
 
-  int n_time = tab.time.n_elem;
-  tab.death_rate = tab.death / tab.nar;
-  tab.event_rate = tab.event / tab.nar;
-  tab.haz = (tab.death + tab.event) / tab.nar;
-  
-  // Survival at the beginning of the interval.
+  arma::colvec nar_safe = arma::clamp(tab.nar, 1.0, arma::datum::inf);
+  tab.death_rate = tab.death / nar_safe;
+  tab.event_rate = tab.event / nar_safe;
+  tab.haz = (tab.death + tab.event) / nar_safe;
+
   tab.surv_init.set_size(n_time);
   tab.surv_init(0) = 1.0;
-  arma::vec cumprod_haz = arma::cumprod(1.0 - tab.haz);
-  tab.surv_init.subvec(1, n_time - 1) = cumprod_haz.subvec(0, n_time - 2);
-  
-  // Cumulative incidence curves.
+  if (n_time > 1) {
+    const arma::colvec cumprod_haz = arma::cumprod(1.0 - tab.haz);
+    tab.surv_init.subvec(1, n_time - 1) = cumprod_haz.subvec(0, n_time - 2);
+  }
+
   tab.cic_event = arma::cumsum(tab.surv_init % tab.event_rate);
   tab.cic_death = arma::cumsum(tab.surv_init % tab.death_rate);
 
-  // Calculate martingales.
-  arma::mat dM1 = CalcMartingaleCI(
-    1, tab.event_rate, tab.time, status, time);
-  arma::mat dM2 = CalcMartingaleCI(
-    2, tab.death_rate, tab.time, status, time);
-  arma::mat dM = dM1 + dM2;
+  const arma::mat dM1 = CalcMartingaleCI(1, tab.event_rate, tab.time, status, time);
+  const arma::mat dM2 = CalcMartingaleCI(2, tab.death_rate, tab.time, status, time);
+  const arma::mat dM = dM1 + dM2;
 
-  // Cumulative incidence at truncation time.
-  double ft = arma::as_scalar(tab.cic_event.elem(arma::find(eval_times == trunc_time)));
+  // CIC at trunc_time: use last eval time <= trunc_time (avoids empty find).
+  const arma::uvec idx_tau = arma::find(eval_times <= trunc_time, 1, "last");
+  const double ft = (idx_tau.n_elem > 0) ? arma::as_scalar(tab.cic_event(idx_tau)) : 0.0;
 
-  // Calculate influence function.
-  arma::colvec dMi;
-  arma::colvec dM1i;
-  arma::colvec influence = arma::zeros(n);
-
-  for(int i=0; i<n; i++) {
-    dMi = arma::trans(dM.row(i));
-    dM1i = arma::trans(dM1.row(i));
-
-    // Term 1.
-    double t1 = -ft * n * arma::accu(dMi / tab.nar);
-
-    // Term 2.
-    double t2 = n * arma::accu(tab.cic_event % dMi / tab.nar);
-
-    // Term 3.
-    double t3 = n * arma::accu(tab.surv_init % dM1i / tab.nar);
-
-    influence(i) = t1 + t2 + t3;
+  arma::colvec influence(n);
+  for (arma::uword i = 0; i < n; ++i) {
+    const arma::colvec dMi = dM.row(i).t();
+    const arma::colvec dM1i = dM1.row(i).t();
+    const double nn = static_cast<double>(n);
+    influence(i) = -ft * nn * arma::as_scalar(arma::sum(dMi / nar_safe)) +
+      nn * arma::as_scalar(arma::sum(tab.cic_event % dMi / nar_safe)) +
+      nn * arma::as_scalar(arma::sum(tab.surv_init % dM1i / nar_safe));
   }
-
   return Rcpp::wrap(influence);
-};
+}
 

@@ -14,21 +14,28 @@ Cstat(
 )
 }
 \arguments{
-\item{data}{Data frame including risk, status, time.}
+\item{data}{Data.frame including risk score and \code{status}, \code{time}.}
 
-\item{pseudo_counts}{Include pseudo counts?}
+\item{pseudo_counts}{If TRUE, add 0.5 to the numerator and 1 to the
+denominator for pairs with tied event times; if FALSE, such pairs are
+excluded.}
 
 \item{risk_name}{Name of the risk column.}
 
 \item{status_name}{Name of status column.}
 
-\item{tau}{Truncation time.}
+\item{tau}{Truncation time; only pairs with event time < tau are used.
+Defaults to the maximum event time if NULL.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame.
+Numeric C-statistic (between 0 and 1).
 }
 \description{
-Calculate Unweighted Concordance
+Computes the C-statistic (concordance index): the proportion of event-time
+pairs for which the risk score correctly orders the two subjects (higher
+risk for the subject with the earlier event). Pairs with tied event times
+contribute 0.5 to the numerator and 1 to the denominator when
+\code{pseudo_counts = TRUE}.
 }

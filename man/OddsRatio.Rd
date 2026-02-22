@@ -2,7 +2,7 @@
 % Please edit documentation in R/compare_rates.R
 \name{OddsRatio}
 \alias{OddsRatio}
-\title{Calculate Rate Odds Ratio}
+\title{Calculate Odds Ratio}
 \usage{
 OddsRatio(
   rates,
@@ -13,9 +13,9 @@ OddsRatio(
 )
 }
 \arguments{
-\item{rates}{Data.frame.}
+\item{rates}{Data.frame with one row per arm.}
 
-\item{alpha}{Type I error.}
+\item{alpha}{Type I error level for the confidence interval (default 0.05).}
 
 \item{arm_name}{Name of arm column.}
 
@@ -24,10 +24,10 @@ OddsRatio(
 \item{se_name}{Name of standard error column.}
 }
 \value{
-Data.frame
+Data.frame with one row: \code{stat} = "or", \code{est}, \code{se}, \code{lower}, \code{upper}, \code{p}.
 }
 \description{
-Calculate the odds ratio comparing two treatment arms.
-Input data.frame should contain arm, taking values 0 and 1,
-the event rate, and the standard error.
+Computes the odds ratio comparing two treatment arms (event odds in arm 1
+vs arm 0) with confidence interval and p-value. Input data.frame should
+contain arm (0 and 1), event rate, and standard error.
 }

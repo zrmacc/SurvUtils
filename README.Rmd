@@ -9,8 +9,10 @@ output:
 
 # Utility Functions for Survival Analysis
 
+[![R-CMD-check](https://github.com/zrmacc/SurvUtils/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/zrmacc/SurvUtils/actions/workflows/R-CMD-check.yaml)
+
 Zachary R. McCaw <br>
-Updated: 2024-08-04
+Updated: 2026-02-22
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(cache = FALSE, fig.align = "center")
@@ -121,7 +123,7 @@ data <- SurvUtils::GenData(
 )
 
 # Evaluate.
-eval <- CompreCoxCstat(
+eval <- CompareCoxCstat(
   status = data$status,
   time = data$time,
   x1 = data %>% dplyr::select(x1, x2),

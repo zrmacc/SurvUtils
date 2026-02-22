@@ -7,7 +7,7 @@
 \method{print}{TwoSample}(x, ...)
 }
 \arguments{
-\item{x}{An object of class \code{TwoSamples}.}
+\item{x}{An object of class \code{TwoSample}.}
 
 \item{...}{Unused.}
 }

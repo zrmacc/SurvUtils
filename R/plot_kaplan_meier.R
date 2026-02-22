@@ -5,7 +5,11 @@
 # One Sample KM.
 # -----------------------------------------------------------------------------
 
-#' Plot One Sample Survival
+#' Plot One Sample Kaplan-Meier Curve
+#'
+#' Produces a step plot of the Kaplan-Meier survival (or cumulative incidence)
+#' curve with optional pointwise confidence interval and optional parametric
+#' overlay from the Temporal package.
 #'
 #' @param data Data.frame containing time and status.
 #' @param ci Include confidence interval?
@@ -101,7 +105,7 @@ PlotOneSampleKM <- function(
       data = df_km, 
       ggplot2::aes(x = time, y = prob),
       color = color,
-      size = 1
+      linewidth = 1
     )
   
   # Add parametric curves.
@@ -119,7 +123,7 @@ PlotOneSampleKM <- function(
         data = df,
         ggplot2::aes(x = time, y = prob, linetype = curve),
         color = color,
-        size = 1
+        linewidth = 1
       ) +
       ggplot2::scale_linetype_manual(
         name = "Curve",
@@ -150,7 +154,11 @@ PlotOneSampleKM <- function(
 # Two Sample KM.
 # -----------------------------------------------------------------------------
 
-#' Plot Two Sample Survival
+#' Plot Two Sample Kaplan-Meier Curves
+#'
+#' Produces step plots of the Kaplan-Meier survival (or cumulative incidence)
+#' curves for two arms with optional pointwise confidence intervals and
+#' optional parametric overlay from the Temporal package.
 #'
 #' @param data Data.frame containing time, status, and arm.
 #' @param arm_name Name of arm column.
@@ -251,7 +259,7 @@ PlotTwoSampleKM <- function(
     ggplot2::geom_step(
       data = df_km, 
       ggplot2::aes(x = time, y = prob, color = arm),
-      size = 1
+      linewidth = 1
     )
   
   # Add parametric curves.
@@ -269,7 +277,7 @@ PlotTwoSampleKM <- function(
       ggplot2::geom_line(
         data = df,
         ggplot2::aes(x = time, y = prob, color = arm, linetype = curve),
-        size = 1
+        linewidth = 1
       ) +
       ggplot2::scale_linetype_manual(
         name = NULL,

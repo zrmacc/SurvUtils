@@ -13,22 +13,27 @@ GenPseudo(
 )
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with survival data (time and status).}
 
-\item{tau}{Truncation time.}
+\item{tau}{Truncation time at which to evaluate the parameter. Defaults to
+the maximum observation time if NULL or if tau exceeds it.}
 
-\item{type}{Type of pseudo-value, select "prob" for probability and "rmst"
-for restricted mean survival time.}
+\item{type}{Type of pseudo-value: \code{"prob"} for event (failure) probability
+at tau (1 - S(tau)); \code{"rmst"} for restricted mean survival time up to
+tau; \code{"cic"} for cumulative incidence at tau (competing risks; status
+0 = censored, 1 = event, 2 = competing risk).}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame including the influence function and pseudo-value for each
-observation.
+Data.frame with the same rows as \code{data}, plus columns
+\code{influence} (estimated influence contribution) and \code{pseudo}
+(pseudo-value = parameter estimate + influence).
 }
 \description{
-Generates pseudo-values for each patient as the target parameter plus the
-influence function.
+Generates pseudo-values for each observation as the target parameter estimate
+plus the estimated influence function. Useful for regression modeling and
+the perturbation bootstrap.
 }

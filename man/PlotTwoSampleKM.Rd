@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_kaplan_meier.R
 \name{PlotTwoSampleKM}
 \alias{PlotTwoSampleKM}
-\title{Plot Two Sample Survival}
+\title{Plot Two Sample Kaplan-Meier Curves}
 \usage{
 PlotTwoSampleKM(
   data,
@@ -66,5 +66,7 @@ PlotTwoSampleKM(
 ggplot.
 }
 \description{
-Plot Two Sample Survival
+Produces step plots of the Kaplan-Meier survival (or cumulative incidence)
+curves for two arms with optional pointwise confidence intervals and
+optional parametric overlay from the Temporal package.
 }

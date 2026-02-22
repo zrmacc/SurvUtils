@@ -5,18 +5,18 @@
 # Risk difference, ratio, odds ratio.
 # -----------------------------------------------------------------------------
 
-#' Calculate Rate Difference.
-#' 
-#' Calculate the rate difference comparing two groups.
-#' Input data.frame should contain arm, taking values 0 and 1,
-#' the event rate, and the standard error.
-#' 
-#' @param rates Data.frame.
-#' @param alpha Type I error.
+#' Calculate Rate Difference
+#'
+#' Computes the difference in event rates between two groups (arm 1 minus arm 0)
+#' with a confidence interval and p-value. Input data.frame should contain arm
+#' (0 and 1), event rate, and standard error.
+#'
+#' @param rates Data.frame with one row per arm.
+#' @param alpha Type I error level for the confidence interval (default 0.05).
 #' @param arm_name Name of arm column.
 #' @param rate_name Name of rate column.
 #' @param se_name Name of standard error column.
-#' @return Data.frame.
+#' @return Data.frame with one row: \code{stat} = "rd", \code{est}, \code{se}, \code{lower}, \code{upper}, \code{p}.
 #' @export
 RateDiff <- function(
   rates, 
@@ -33,9 +33,9 @@ RateDiff <- function(
   # Rate difference calculation.
   rd <- rates %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      rate = {{rate_name}},
-      se = {{se_name}}
+      arm = dplyr::all_of(arm_name),
+      rate = dplyr::all_of(rate_name),
+      se = dplyr::all_of(se_name)
     ) %>%
     dplyr::summarise(
       stat = "rd",
@@ -55,17 +55,16 @@ RateDiff <- function(
 
 
 #' Calculate Rate Ratio
-#' 
-#' Calculate the rate difference comparing two groups.
-#' Input data.frame should contain arm, taking values 0 and 1,
-#' the event rate, and the standard error.
+#'
+#' Calculate the rate ratio comparing two groups. Input data.frame should
+#' contain arm (0 and 1), event rate, and standard error.
 #' 
 #' @param rates Data.frame.
 #' @param alpha Type I error.
 #' @param arm_name Name of arm column.
 #' @param rate_name Name of rate column.
 #' @param se_name Name of standard error column.
-#' @return Data.frame
+#' @return Data.frame with one row: \code{stat} = "rr", \code{est}, \code{se}, \code{lower}, \code{upper}, \code{p}.
 #' @export
 RateRatio <- function(
   rates, 
@@ -82,9 +81,9 @@ RateRatio <- function(
   # Rate ratio calculation.
   rr <- rates %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      rate = {{rate_name}},
-      se = {{se_name}}
+      arm = dplyr::all_of(arm_name),
+      rate = dplyr::all_of(rate_name),
+      se = dplyr::all_of(se_name)
     ) %>%
     dplyr::summarise(
       stat = "rr",
@@ -105,18 +104,18 @@ RateRatio <- function(
 }
 
 
-#' Calculate Rate Odds Ratio
-#' 
-#' Calculate the odds ratio comparing two treatment arms.
-#' Input data.frame should contain arm, taking values 0 and 1,
-#' the event rate, and the standard error.
-#' 
-#' @param rates Data.frame.
-#' @param alpha Type I error.
+#' Calculate Odds Ratio
+#'
+#' Computes the odds ratio comparing two treatment arms (event odds in arm 1
+#' vs arm 0) with confidence interval and p-value. Input data.frame should
+#' contain arm (0 and 1), event rate, and standard error.
+#'
+#' @param rates Data.frame with one row per arm.
+#' @param alpha Type I error level for the confidence interval (default 0.05).
 #' @param arm_name Name of arm column.
 #' @param rate_name Name of rate column.
 #' @param se_name Name of standard error column.
-#' @return Data.frame
+#' @return Data.frame with one row: \code{stat} = "or", \code{est}, \code{se}, \code{lower}, \code{upper}, \code{p}.
 #' @export
 OddsRatio <- function(
   rates, 
@@ -133,9 +132,9 @@ OddsRatio <- function(
   # Odds ratio calculation.
   or <- rates %>% 
     dplyr::rename(
-      arm = {{arm_name}},
-      rate = {{rate_name}},
-      se = {{se_name}}
+      arm = dplyr::all_of(arm_name),
+      rate = dplyr::all_of(rate_name),
+      se = dplyr::all_of(se_name)
     ) %>%
     dplyr::summarise(
       stat = "or",
@@ -164,17 +163,21 @@ OddsRatio <- function(
 # -----------------------------------------------------------------------------
 
 #' Compare Rates
-#' 
-#' Compare the Kaplan-Meier survival or incidence rates of two treatment arms.
-#' 
-#' @param data Data.frame.
-#' @param alpha Type I error.
-#' @param arm_name Name of arm column.
-#' @param return_surv Logical, TRUE for survival, FALSE for cumulative incidence.
+#'
+#' Compares the Kaplan-Meier survival (or event) rates of two treatment arms
+#' at time \code{tau}, with risk difference, risk ratio, and odds ratio.
+#'
+#' @param data Data.frame with arm, time, and status.
+#' @param alpha Type I error level for confidence intervals (default 0.05).
+#' @param arm_name Name of arm column (values 0 and 1).
+#' @param return_surv If TRUE, compare survival probabilities; if FALSE, compare
+#'   event (failure) probabilities (1 - survival).
 #' @param status_name Name of status column.
-#' @param tau Truncation time.
+#' @param tau Time at which to evaluate the rate. Defaults to the maximum
+#'   observation time if NULL.
 #' @param time_name Name of time column.
-#' @return Data.frame.
+#' @return Object of class \code{TwoSample} with slots \code{Marginal} (per-arm
+#'   rate and se) and \code{Contrasts} (rd, rr, or with est, se, lower, upper, p).
 #' @export
 CompareRates <- function(
   data,
@@ -189,9 +192,9 @@ CompareRates <- function(
   # Prepare data.
   df <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Default truncation.

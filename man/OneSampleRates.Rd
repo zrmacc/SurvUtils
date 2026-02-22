@@ -2,7 +2,7 @@
 % Please edit documentation in R/one_sample.R
 \name{OneSampleRates}
 \alias{OneSampleRates}
-\title{One Sample Rates}
+\title{One Sample Event Rate at a Time Point}
 \usage{
 OneSampleRates(
   data,
@@ -13,19 +13,21 @@ OneSampleRates(
 )
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status (0 = censored, 1 = event).}
 
-\item{tau}{Truncation time.}
+\item{tau}{Time at which to evaluate the rate. Defaults to the maximum
+observation time if NULL.}
 
-\item{alpha}{Type I error.}
+\item{alpha}{Type I error level for the confidence interval (default 0.05).}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame.
+Data.frame with columns \code{tau}, \code{rate}, \code{se}, \code{lower}, \code{upper}.
 }
 \description{
-One Sample Rates
+Estimates the event (failure) probability at time \code{tau}, i.e. 1 - S(tau),
+with standard error and confidence interval from the Kaplan-Meier estimator.
 }

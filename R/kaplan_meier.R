@@ -2,13 +2,18 @@
 #' Updated: 2023-09-26
 
 
-#' Tabulate Kaplan-Meier 
-#' 
-#' @param data Data.frame.
+#' Tabulate Kaplan-Meier
+#'
+#' Builds a table of unique event/censoring times with counts, number at risk,
+#' hazard, cumulative hazard, survival, and pointwise confidence intervals.
+#'
+#' @param data Data.frame with time and status (0 = censored, 1 = event).
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @param alpha Type I error, for confidence intervals.
-#' @return Data.frame.
+#' @param alpha Type I error level for confidence intervals (default 0.05).
+#' @return Data.frame with columns \code{time}, \code{censor}, \code{events},
+#'   \code{nar}, \code{haz}, \code{cum_haz}, \code{cum_haz_var}, \code{cum_haz_lower},
+#'   \code{cum_haz_upper}, \code{surv}, \code{surv_var}, \code{surv_lower}, \code{surv_upper}.
 #' @export
 TabulateKM <- function(
     data,
@@ -21,8 +26,8 @@ TabulateKM <- function(
   time <- status <- NULL
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Events table.
@@ -83,16 +88,19 @@ TabulateKM <- function(
 
 
 #' Generate Survival and Hazard Curves
-#' 
-#' Intended for data from a single sample.
-#' 
-#' @param data Data.frame.
-#' @param alpha Type I error.
+#'
+#' Fits the Kaplan-Meier estimator and returns an object containing step
+#' functions for the cumulative hazard, survival, their variances, and
+#' confidence bounds, plus number at risk. Intended for a single sample.
+#'
+#' @param data Data.frame with time and status (0 = censored, 1 = event).
+#' @param alpha Type I error level for confidence intervals (default 0.05).
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
 #' @importFrom stats stepfun
+#' @return Object of class \code{OneSampleSurv} with slots \code{CumHaz}, \code{Surv},
+#'   \code{NAR}, their variance and CI functions, and \code{tmax}.
 #' @export
-#' @return OneSampleSurv object.
 SurvCurves <- function(
     data,
     alpha = 0.05,
@@ -103,8 +111,8 @@ SurvCurves <- function(
   # Format data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Tabulate Kaplan-Meier.
@@ -148,14 +156,17 @@ SurvCurves <- function(
 # -----------------------------------------------------------------------------
 
 #' Kaplan-Meier Influence
-#' 
-#' Calculate Kaplan-Meier influence function for each observation.
-#' 
-#' @param data Data.frame.
-#' @param tau Truncation time at which to calculate the influence.
+#'
+#' Calculates the influence function contribution for the Kaplan-Meier
+#' survival estimate at \code{tau} for each observation. Used for standard
+#' error estimation and the perturbation bootstrap.
+#'
+#' @param data Data.frame with time and status (0 = censored, 1 = event).
+#' @param tau Time at which the survival probability is evaluated. Defaults to
+#'   the maximum observation time if NULL or if tau exceeds it.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame with an additional column, `influence`.
+#' @return Data.frame with the same rows as \code{data}, plus column \code{influence}.
 #' @export
 KMInfluence <- function(
     data,
@@ -168,8 +179,8 @@ KMInfluence <- function(
   time <- status <- NULL
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Evaluation time.

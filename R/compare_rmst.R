@@ -2,16 +2,18 @@
 # Updated: 2022-08-07
 
 #' Compare RMSTs
-#' 
-#' Compare the restricted mean survival times of two treatment arms.
-#' 
-#' @param data Data.frame.
-#' @param alpha Type I error.
-#' @param arm_name Name of arm column.
+#'
+#' Compares the restricted mean survival times (RMST) of two treatment arms
+#' up to time \code{tau}, with difference and ratio contrasts.
+#'
+#' @param data Data.frame with arm, time, and status (0 = censored, 1 = event).
+#' @param alpha Type I error level for confidence intervals (default 0.05).
+#' @param arm_name Name of arm column (values 0 and 1).
 #' @param status_name Name of status column.
-#' @param tau Truncation time.
+#' @param tau Restriction time. Defaults to the maximum observation time if NULL.
 #' @param time_name Name of time column.
-#' @return Data.frame.
+#' @return Object of class \code{TwoSample} with slots \code{Marginal} (per-arm
+#'   RMST and se) and \code{Contrasts} (difference and ratio with est, se, lower, upper, p).
 #' @importFrom dplyr "%>%"
 #' @export
 
@@ -27,9 +29,9 @@ CompareRMSTs <- function(
   # Prepare data.
   df <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Default truncation.

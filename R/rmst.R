@@ -2,14 +2,16 @@
 # Updated: 2024-01-08
 
 #' RMST Influence
-#' 
-#' Calculate RMST influence function for each observation.
-#' 
-#' @param data Data.frame.
-#' @param tau Truncation time at which to calculate the influence.
+#'
+#' Calculates the influence function contribution for the restricted mean
+#' survival time (RMST) at \code{tau} for each observation.
+#'
+#' @param data Data.frame with time and status (0 = censored, 1 = event).
+#' @param tau Truncation time at which the RMST is evaluated. Defaults to the
+#'   maximum observation time if NULL or if tau exceeds it.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Numeric vector.
+#' @return Data.frame with the same rows as \code{data}, plus column \code{influence}.
 #' @export
 RMSTInfluence <- function(
     data,
@@ -22,8 +24,8 @@ RMSTInfluence <- function(
   time <- status <- NULL
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Evaluation time.

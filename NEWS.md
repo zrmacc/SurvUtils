@@ -3,8 +3,8 @@
 	* Added functions for estimation and inference on cumulative incidence curves (CICs).
 		- Added `GenCRData` to simulate competing risks data.
 		- Added `OneSampleCIC` to estimate the cumulative incidence at a given time point.
-	* Renamed `GetCurves`to `SurvCurves` and added an analogous function `CICurves` for CICs. 
-	* Updated `GenPseudo` to generate psuedo-values for the cumulative incidence.
+	* Renamed `GetCurves` to `SurvCurves` and added an analogous function `CICurves` for CICs.
+	* Updated `GenPseudo` to generate pseudo-values for the cumulative incidence.
 	* Updated `GenData` and `GenCRData` to return simplified output by default.
 
 ## Version 0.8.4

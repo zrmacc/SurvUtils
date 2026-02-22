@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_nars.R
 \name{PlotOneSampleNARs}
 \alias{PlotOneSampleNARs}
-\title{Plot Two Sample Numbers at Risk}
+\title{Plot One Sample Numbers at Risk}
 \usage{
 PlotOneSampleNARs(
   data,
@@ -17,9 +17,9 @@ PlotOneSampleNARs(
 )
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status.}
 
-\item{specified_nars}{Optional data.frame of specified NARs. Should include
+\item{specified_nars}{Optional data.frame of precomputed NARs. Should include
 "time" and "nar". Overrides \code{data} if present.}
 
 \item{status_name}{Name of status column.}
@@ -40,5 +40,6 @@ PlotOneSampleNARs(
 ggplot.
 }
 \description{
-Plot Two Sample Numbers at Risk
+Plots the number at risk at specified time points below a Kaplan-Meier or
+other survival plot.
 }

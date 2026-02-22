@@ -7,17 +7,20 @@
 KMInfluence(data, tau = NULL, status_name = "status", time_name = "time")
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status (0 = censored, 1 = event).}
 
-\item{tau}{Truncation time at which to calculate the influence.}
+\item{tau}{Time at which the survival probability is evaluated. Defaults to
+the maximum observation time if NULL or if tau exceeds it.}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame with an additional column, \code{influence}.
+Data.frame with the same rows as \code{data}, plus column \code{influence}.
 }
 \description{
-Calculate Kaplan-Meier influence function for each observation.
+Calculates the influence function contribution for the Kaplan-Meier
+survival estimate at \code{tau} for each observation. Used for standard
+error estimation and the perturbation bootstrap.
 }

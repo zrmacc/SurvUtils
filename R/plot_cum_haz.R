@@ -8,6 +8,9 @@
 
 #' Plot One Sample Cumulative Hazard
 #'
+#' Produces a step plot of the cumulative hazard with pointwise confidence
+#' interval from the Kaplan-Meier estimator.
+#'
 #' @param data Data.frame containing time and status.
 #' @param color Color for KM curve.
 #' @param status_name Name of status column.
@@ -36,7 +39,7 @@ PlotOneSampleCH <- function(
     x_labs = NULL,
     x_name = "Time",
     x_max = NULL,
-    y_name = "Cumulactive Hazard",
+    y_name = "Cumulative Hazard",
     y_lim = NULL
 ) {
   
@@ -80,7 +83,7 @@ PlotOneSampleCH <- function(
       data = df_ch, 
       ggplot2::aes(x = time, y = cumhaz),
       color = color,
-      size = 1
+      linewidth = 1
     )
   
   # Plot adjustments.
@@ -264,7 +267,7 @@ PlotTwoSampleCH <- function(
       ggplot2::geom_step(
         data = df_ch, 
         ggplot2::aes(x = time, y = cumhaz, color = arm),
-        size = 1
+        linewidth = 1
       ) + 
       ggplot2::scale_color_manual(
         name = NULL, 

@@ -15,7 +15,7 @@ PlotOneSampleCH(
   x_labs = NULL,
   x_name = "Time",
   x_max = NULL,
-  y_name = "Cumulactive Hazard",
+  y_name = "Cumulative Hazard",
   y_lim = NULL
 )
 }
@@ -48,5 +48,6 @@ PlotOneSampleCH(
 ggplot.
 }
 \description{
-Plot One Sample Cumulative Hazard
+Produces a step plot of the cumulative hazard with pointwise confidence
+interval from the Kaplan-Meier estimator.
 }

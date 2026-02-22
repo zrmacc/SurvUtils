@@ -33,11 +33,15 @@ GenData(
 
 \item{simple}{Return only the index, time, and status? If FALSE, returns additional data.}
 
-\item{tau}{Truncation time.}
+\item{tau}{Truncation time (observation is administratively censored at tau).}
 }
 \value{
-Data.frame.
+Data.frame. If \code{simple = TRUE}, columns are \code{idx}, \code{time}, \code{status}
+(0 = censored, 1 = event). If \code{simple = FALSE}, includes additional columns from the
+simulation (e.g. \code{true_event_rate}, \code{event_time}, \code{censor_time}).
 }
 \description{
-Generate Data
+Simulates survival data with exponential event times and independent
+exponential censoring. The subject-specific event rate can depend on
+covariates (log-linear) and an optional gamma frailty.
 }

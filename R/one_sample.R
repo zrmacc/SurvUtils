@@ -3,14 +3,18 @@
 
 # -----------------------------------------------------------------------------
 
-#' One Sample Rates
-#' 
-#' @param data Data.frame.
-#' @param tau Truncation time.
-#' @param alpha Type I error.
+#' One Sample Event Rate at a Time Point
+#'
+#' Estimates the event (failure) probability at time \code{tau}, i.e. 1 - S(tau),
+#' with standard error and confidence interval from the Kaplan-Meier estimator.
+#'
+#' @param data Data.frame with time and status (0 = censored, 1 = event).
+#' @param tau Time at which to evaluate the rate. Defaults to the maximum
+#'   observation time if NULL.
+#' @param alpha Type I error level for the confidence interval (default 0.05).
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame.
+#' @return Data.frame with columns \code{tau}, \code{rate}, \code{se}, \code{lower}, \code{upper}.
 #' @export
 OneSampleRates <- function(
     data,
@@ -23,20 +27,21 @@ OneSampleRates <- function(
   # Format data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   if (is.null(tau)) {
     tau <- max(df$time)
   }
 
   km <- SurvCurves(df, alpha = alpha)
+  # Event (failure) rate = 1 - S(tau); CI bounds reversed for 1 - S.
   out <- data.frame(
     tau = tau,
-    rate = km@Surv(tau),
+    rate = 1 - km@Surv(tau),
     se = sqrt(km@SurvVar(tau)),
-    lower = km@SurvLower(tau),
-    upper = km@SurvUpper(tau)
+    lower = 1 - km@SurvUpper(tau),
+    upper = 1 - km@SurvLower(tau)
   )
   return(out)
 }
@@ -44,18 +49,19 @@ OneSampleRates <- function(
 
 # -----------------------------------------------------------------------------
 
-#' One Sample Cumulative Incidence Curve
-#' 
-#' For calculating cumulative incidence in the presence in the presence of a 
-#' competing risk, status is assumed to have values of 0 for censoring, 1 for
-#' the event of interest, and 2 for the competing risk.
-#' 
-#' @param data Data.frame. 
-#' @param tau Truncation time.
-#' @param alpha Type I error.
+#' One Sample Cumulative Incidence at a Time Point
+#'
+#' Estimates the cumulative incidence of the event of interest at time \code{tau}
+#' in the presence of a competing risk. Status must be 0 = censored, 1 = event of
+#' interest, 2 = competing risk (e.g. death).
+#'
+#' @param data Data.frame with time and status.
+#' @param tau Time at which to evaluate the cumulative incidence. Defaults to
+#'   the maximum observation time if NULL.
+#' @param alpha Type I error level for the confidence interval (default 0.05).
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame.
+#' @return Data.frame with columns \code{tau}, \code{rate}, \code{se}, \code{lower}, \code{upper}.
 #' @export
 OneSampleCIC <- function(
     data,
@@ -68,8 +74,8 @@ OneSampleCIC <- function(
   # Format data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   if (is.null(tau)) {
     tau <- max(df$time)
@@ -111,14 +117,18 @@ GetPercentile <- function(time, prob, q = 0.5) {
 }
 
 
-#' One Sample Percentiles
-#' 
-#' @param data Data.frame.
-#' @param p Percentile. 
-#' @param alpha Type I error.
+#' One Sample Survival Percentiles
+#'
+#' Estimates quantiles of the survival distribution (e.g. median survival time)
+#' with confidence intervals from the Kaplan-Meier estimator.
+#'
+#' @param data Data.frame with time and status (0 = censored, 1 = event).
+#' @param p Percentile(s), e.g. 0.5 for median. Can be a vector.
+#' @param alpha Type I error level for confidence intervals (default 0.05).
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame.
+#' @return Data.frame with columns \code{prob}, \code{time}, \code{lower}, \code{upper}
+#'   (one row per value of \code{p}).
 #' @importFrom dplyr "%>%"
 #' @export
 OneSamplePercentiles <- function(
@@ -132,8 +142,8 @@ OneSamplePercentiles <- function(
   # Format data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   tab <- TabulateKM(df, alpha = alpha)
@@ -155,14 +165,19 @@ OneSamplePercentiles <- function(
 # -----------------------------------------------------------------------------
 
 
-#' One Sample RMST
-#' 
-#' @param data Data.frame.
-#' @param tau Truncation time.
-#' @param alpha Type I error.
+#' One Sample Restricted Mean Survival Time
+#'
+#' Estimates the restricted mean survival time (RMST) up to \code{tau}, i.e. the
+#' area under the survival curve from 0 to tau, with standard error and
+#' confidence interval.
+#'
+#' @param data Data.frame with time and status (0 = censored, 1 = event).
+#' @param tau Restriction time. Defaults to the maximum observation time if NULL.
+#' @param alpha Type I error level for the confidence interval (default 0.05).
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame.
+#' @return Data.frame with columns \code{tau}, \code{auc} (RMST), \code{se},
+#'   \code{lower}, \code{upper}.
 #' @export
 OneSampleRMST <- function(
     data,
@@ -175,8 +190,8 @@ OneSampleRMST <- function(
   # Format data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   if (is.null(tau)) {
     tau <- max(df$time)
@@ -186,7 +201,7 @@ OneSampleRMST <- function(
   time <- NULL
   tab <- TabulateKM(df, alpha = alpha) %>%
     dplyr::filter(time <= tau)
-  auc <- RMST(status = df$status, time = df$time, tau = tau)
+  auc <- RMST(status = df$status, time = df$time, extend = FALSE, tau = tau)
   
   # Variance calculation.
   # Mu_{\tau}(t) = \int_{t}^{\tau}S(u)du.

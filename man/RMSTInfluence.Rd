@@ -7,17 +7,19 @@
 RMSTInfluence(data, tau = NULL, status_name = "status", time_name = "time")
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status (0 = censored, 1 = event).}
 
-\item{tau}{Truncation time at which to calculate the influence.}
+\item{tau}{Truncation time at which the RMST is evaluated. Defaults to the
+maximum observation time if NULL or if tau exceeds it.}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Numeric vector.
+Data.frame with the same rows as \code{data}, plus column \code{influence}.
 }
 \description{
-Calculate RMST influence function for each observation.
+Calculates the influence function contribution for the restricted mean
+survival time (RMST) at \code{tau} for each observation.
 }

@@ -3,15 +3,16 @@
 
 #' Calculate Hazard Ratio
 #'
-#' Calculate the hazard ratio, comparing two treatment arms, its confidence
-#' interval and p-value. Also provides the Schoenfeld residual test of the
-#' proportional hazards assumption.
+#' Fits a Cox model with a single arm covariate and returns the hazard ratio
+#' (arm 1 vs 0) with confidence interval and p-value. Also returns the
+#' Schoenfeld residual test for the proportional hazards assumption.
 #'
-#' @param data Reconstructed data.
+#' @param data Data.frame with arm (0 and 1), time, and status (0 = censored, 1 = event).
 #' @param arm_name Name of arm column.
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame.
+#' @return Data.frame with one row: \code{hr}, \code{se_log_hr}, \code{lower}, \code{upper},
+#'   \code{p}, and \code{schoenfeld_test} (p-value for proportional hazards).
 #' @export
 
 CalcHR <- function(
@@ -24,9 +25,9 @@ CalcHR <- function(
   # Format data.
   df <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Fit Cox model.
@@ -43,8 +44,8 @@ CalcHR <- function(
     "p" = cox_model_summary$coefficients[5]
   )
   
-  # Schoefeld residual test.
-  schoefeld_test <- survival::cox.zph(cox_model)
-  hazard_ratio$schoenfeld_test <- schoefeld_test$table[1, 3]
+  # Schoenfeld residual test.
+  schoenfeld_test <- survival::cox.zph(cox_model)
+  hazard_ratio$schoenfeld_test <- schoenfeld_test$table[1, 3]
   return(hazard_ratio)
 }

@@ -7,17 +7,20 @@
 SurvCurves(data, alpha = 0.05, status_name = "status", time_name = "time")
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status (0 = censored, 1 = event).}
 
-\item{alpha}{Type I error.}
+\item{alpha}{Type I error level for confidence intervals (default 0.05).}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-OneSampleSurv object.
+Object of class \code{OneSampleSurv} with slots \code{CumHaz}, \code{Surv},
+\code{NAR}, their variance and CI functions, and \code{tmax}.
 }
 \description{
-Intended for data from a single sample.
+Fits the Kaplan-Meier estimator and returns an object containing step
+functions for the cumulative hazard, survival, their variances, and
+confidence bounds, plus number at risk. Intended for a single sample.
 }

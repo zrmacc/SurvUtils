@@ -7,7 +7,7 @@
 #' @param eval_points Number of points at which to evaluate the curve.
 #' @param return_surv Logical, TRUE for survival, FALSE for cumulative incidence.
 #' @param status_name Name of status column.
-#' @param tau Trunction time.
+#' @param tau Truncation time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
 #' @importFrom dplyr "%>%"
@@ -24,8 +24,8 @@ OneSampleSurvFrame <- function(
   # Prepare data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   km <- SurvCurves(df)
   
@@ -61,7 +61,7 @@ OneSampleSurvFrame <- function(
 #' @param eval_points Number of points at which to evaluate the curve.
 #' @param return_surv Logical, TRUE for survival, FALSE for cumulative incidence.
 #' @param status_name Name of status column.
-#' @param tau Trunction time.
+#' @param tau Truncation time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
 #' @importFrom dplyr "%>%"
@@ -79,9 +79,9 @@ TwoSampleSurvFrame <- function(
   # Data.frame.
   data <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Prepare data.
@@ -199,7 +199,7 @@ TwoSampleModelFrame <- function(
 #' @param data Data.frame
 #' @param eval_points Number of points at which to evaluate the curve.
 #' @param status_name Name of status column.
-#' @param tau Trunction time.
+#' @param tau Truncation time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
 #' @importFrom dplyr "%>%"
@@ -216,8 +216,8 @@ OneSampleCHFrame <- function(
   # Prepare data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   ch <- SurvCurves(df)
   
@@ -244,7 +244,7 @@ OneSampleCHFrame <- function(
 #' @param arm_name Name of arm column.
 #' @param eval_points Number of points at which to evaluate the curve.
 #' @param status_name Name of status column.
-#' @param tau Trunction time.
+#' @param tau Truncation time.
 #' @param time_name Name of time column.
 #' @return Data.frame.
 #' @importFrom dplyr "%>%"
@@ -262,9 +262,9 @@ TwoSampleCHFrame <- function(
   # Data.frame.
   data <- data %>%
     dplyr::rename(
-      arm = {{arm_name}},
-      status = {{status_name}},
-      time = {{time_name}}
+      arm = dplyr::all_of(arm_name),
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Prepare data.

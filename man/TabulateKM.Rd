@@ -9,19 +9,20 @@ Tabulate Kaplan-Meier}
 TabulateKM(data, status_name = "status", time_name = "time", alpha = 0.05)
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status (0 = censored, 1 = event).}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 
-\item{alpha}{Type I error, for confidence intervals.}
+\item{alpha}{Type I error level for confidence intervals (default 0.05).}
 }
 \value{
-Data.frame.
+Data.frame with columns \code{time}, \code{censor}, \code{events},
+\code{nar}, \code{haz}, \code{cum_haz}, \code{cum_haz_var}, \code{cum_haz_lower},
+\code{cum_haz_upper}, \code{surv}, \code{surv_var}, \code{surv_lower}, \code{surv_upper}.
 }
 \description{
-Purpose: Kaplan-Meier estimator.
-Updated: 2023-09-26
-Tabulate Kaplan-Meier
+Builds a table of unique event/censoring times with counts, number at risk,
+hazard, cumulative hazard, survival, and pointwise confidence intervals.
 }

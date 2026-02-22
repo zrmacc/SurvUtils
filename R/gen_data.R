@@ -2,7 +2,11 @@
 # Updated: 2024-08-04
 
 #' Generate Data
-#' 
+#'
+#' Simulates survival data with exponential event times and independent
+#' exponential censoring. The subject-specific event rate can depend on
+#' covariates (log-linear) and an optional gamma frailty.
+#'
 #' @param base_event_rate Baseline arrival rate for events.
 #' @param beta_event Numeric vector of log rate ratios for the event rate.
 #' @param censoring_rate Arrival rate for the censoring time.
@@ -11,8 +15,10 @@
 #' @param min_event_rate Minimum subject-specific event rate. Must be positive.
 #' @param n Number of subjects. Overwritten by `nrow(covariates)` if covariates are provided.
 #' @param simple Return only the index, time, and status? If FALSE, returns additional data.
-#' @param tau Truncation time.
-#' @return Data.frame.
+#' @param tau Truncation time (observation is administratively censored at tau).
+#' @return Data.frame. If \code{simple = TRUE}, columns are \code{idx}, \code{time}, \code{status}
+#'   (0 = censored, 1 = event). If \code{simple = FALSE}, includes additional columns from the
+#'   simulation (e.g. \code{true_event_rate}, \code{event_time}, \code{censor_time}).
 #' @export
 GenData <- function(
   base_event_rate = 1.0,
@@ -67,20 +73,26 @@ GenData <- function(
 
 
 #' Generate Competing Risks Data
-#' 
-#' @param base_death_rate Baseline arrival for for death (the competing risk).
+#'
+#' Simulates competing risks data with exponential event and death times and
+#' independent exponential censoring. Status is 0 = censored, 1 = event of
+#' interest, 2 = competing risk (e.g. death).
+#'
+#' @param base_death_rate Baseline arrival rate for death (the competing risk).
 #' @param beta_death Numeric vector of log rate ratios for the death rate.
 #' @param base_event_rate Baseline arrival rate for events.
 #' @param beta_event Numeric vector of log rate ratios for the event rate.
 #' @param censoring_rate Arrival rate for the censoring time.
 #' @param covariates Numeric design matrix.
 #' @param frailty_variance Variance of the gamma frailty.
-#' @param min_death_rate Minimum subject-specific event rate. Must be non-negative.
+#' @param min_death_rate Minimum subject-specific death rate. Must be non-negative.
 #' @param min_event_rate Minimum subject-specific event rate. Must be positive.
 #' @param n Number of subjects. Overwritten by `nrow(covariates)` if covariates are provided.
 #' @param simple Return only the index, time, and status? If FALSE, returns additional data.
-#' @param tau Truncation time.
-#' @return Data.frame.
+#' @param tau Truncation time (observation is administratively censored at tau).
+#' @return Data.frame. If \code{simple = TRUE}, columns are \code{idx}, \code{time}, \code{status}
+#'   (0 = censored, 1 = event of interest, 2 = competing risk). If \code{simple = FALSE}, includes
+#'   additional simulation columns.
 #' @export
 GenCRData <- function(
   base_death_rate = 0.25,

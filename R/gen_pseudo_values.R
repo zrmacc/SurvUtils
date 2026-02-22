@@ -2,18 +2,23 @@
 # Updated: 2024-08-04
 
 #' Generate Pseudo-values
-#' 
-#' Generates pseudo-values for each patient as the target parameter plus the
-#' influence function.
 #'
-#' @param data Data.frame.
-#' @param tau Truncation time.
-#' @param type Type of pseudo-value, select "prob" for probability and "rmst"
-#'   for restricted mean survival time.
+#' Generates pseudo-values for each observation as the target parameter estimate
+#' plus the estimated influence function. Useful for regression modeling and
+#' the perturbation bootstrap.
+#'
+#' @param data Data.frame with survival data (time and status).
+#' @param tau Truncation time at which to evaluate the parameter. Defaults to
+#'   the maximum observation time if NULL or if tau exceeds it.
+#' @param type Type of pseudo-value: \code{"prob"} for event (failure) probability
+#'   at tau (1 - S(tau)); \code{"rmst"} for restricted mean survival time up to
+#'   tau; \code{"cic"} for cumulative incidence at tau (competing risks; status
+#'   0 = censored, 1 = event, 2 = competing risk).
 #' @param status_name Name of status column.
 #' @param time_name Name of time column.
-#' @return Data.frame including the influence function and pseudo-value for each
-#'   observation.
+#' @return Data.frame with the same rows as \code{data}, plus columns
+#'   \code{influence} (estimated influence contribution) and \code{pseudo}
+#'   (pseudo-value = parameter estimate + influence).
 #' @export 
 GenPseudo <- function(
   data,
@@ -26,8 +31,8 @@ GenPseudo <- function(
   # Format data.
   df <- data %>%
     dplyr::rename(
-      status = {{status_name}},
-      time = {{time_name}}
+      status = dplyr::all_of(status_name),
+      time = dplyr::all_of(time_name)
     )
   
   # Evaluation time.
@@ -52,7 +57,7 @@ GenPseudo <- function(
     param <- param$rate
     out <- KMInfluence(df, tau = tau)
     
-  } else if(type == "rmst") {
+  } else if (type == "rmst") {
     
     param <- OneSampleRMST(df, tau = tau)
     param <- param$auc

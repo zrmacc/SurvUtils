@@ -5,9 +5,12 @@
 # Plot area under the curve.
 # -----------------------------------------------------------------------------
 
-#' Plot Area Under the Kaplan-Meier Curve.
+#' Plot Area Under the Kaplan-Meier Curve
 #'
-#' @param data Data including time, status, arm.
+#' Plots the survival (or cumulative incidence) curve with the area under the
+#' curve up to \code{tau} shaded (restricted mean survival time visualization).
+#'
+#' @param data Data.frame with time and status.
 #' @param color Color.
 #' @param label Label for the arm.
 #' @param legend_pos Legend position.
@@ -49,7 +52,7 @@ PlotOneSampleAUC <- function(
   
   # Defaults.
   if (is.null(x_max)) {
-    x_max <- max(data %>% dplyr::select(time_name))
+    x_max <- max(data %>% dplyr::select(dplyr::all_of(time_name)))
   }
   if (is.null(tau)) {
     tau <- x_max
@@ -93,7 +96,7 @@ PlotOneSampleAUC <- function(
     ggplot2::geom_step(
       data = df, 
       ggplot2::aes(x = time, y = prob), 
-      size = 1, 
+      linewidth = 1, 
       color = color
     ) +
     ggplot2::scale_x_continuous(

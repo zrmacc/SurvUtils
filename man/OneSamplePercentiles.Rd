@@ -2,7 +2,7 @@
 % Please edit documentation in R/one_sample.R
 \name{OneSamplePercentiles}
 \alias{OneSamplePercentiles}
-\title{One Sample Percentiles}
+\title{One Sample Survival Percentiles}
 \usage{
 OneSamplePercentiles(
   data,
@@ -13,19 +13,21 @@ OneSamplePercentiles(
 )
 }
 \arguments{
-\item{data}{Data.frame.}
+\item{data}{Data.frame with time and status (0 = censored, 1 = event).}
 
-\item{p}{Percentile.}
+\item{p}{Percentile(s), e.g. 0.5 for median. Can be a vector.}
 
-\item{alpha}{Type I error.}
+\item{alpha}{Type I error level for confidence intervals (default 0.05).}
 
 \item{status_name}{Name of status column.}
 
 \item{time_name}{Name of time column.}
 }
 \value{
-Data.frame.
+Data.frame with columns \code{prob}, \code{time}, \code{lower}, \code{upper}
+(one row per value of \code{p}).
 }
 \description{
-One Sample Percentiles
+Estimates quantiles of the survival distribution (e.g. median survival time)
+with confidence intervals from the Kaplan-Meier estimator.
 }

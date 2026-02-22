@@ -1,12 +1,14 @@
 # Utility Functions for Survival Analysis
 
+[![R-CMD-check](https://github.com/zrmacc/SurvUtils/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/zrmacc/SurvUtils/actions/workflows/R-CMD-check.yaml)
+
 Zachary R. McCaw <br>
-Updated: 2024-08-04
+Updated: 2026-02-22
 
 
 
 
-```r
+``` r
 suppressPackageStartupMessages({
   library(dplyr)
   library(SurvUtils)
@@ -16,7 +18,7 @@ suppressPackageStartupMessages({
 # Installation
 
 
-```r
+``` r
 devtools::install_github(repo = "zrmacc/SurvUtils")
 ```
 
@@ -25,7 +27,7 @@ devtools::install_github(repo = "zrmacc/SurvUtils")
 Generates survival data with exponential event times and censoring. Optionally, the subject-specific event rate may depend on a set of covariates and/or a gamma-frailty.
 
 
-```r
+``` r
 data <- SurvUtils::GenData(
   base_event_rate = 1.0,
   censoring_rate = 0.25,
@@ -36,13 +38,13 @@ head(data)
 ```
 
 ```
-##   idx        time status
-## 1   1 0.647678901      1
-## 2   2 0.007453288      1
-## 3   3 0.425188254      1
-## 4   4 1.640308589      1
-## 5   5 0.060364399      1
-## 6   6 0.180278373      1
+##   idx       time status
+## 1   1 0.05302913      1
+## 2   2 0.15642474      1
+## 3   3 0.91458726      1
+## 4   4 0.18219804      1
+## 5   5 2.34921502      1
+## 6   6 0.13777031      1
 ```
 
 # Estimation
@@ -54,21 +56,21 @@ head(data)
 * Tabulates the cumulative hazard and survival functions, along with variance estimates and confidence intervals.
 
 
-```r
+``` r
 km_tab <- SurvUtils::TabulateKM(data)
 head(km_tab)
 ```
 
 ```
 ## # A tibble: 6 × 13
-##        time censor events   nar    haz cum_haz cum_haz_var cum_haz_lower
-##       <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>         <dbl>
-## 1 0              0      0   100 0       0         0              0      
-## 2 0.0000786      0      1   100 0.01    0.01      0.0001         0.00141
-## 3 0.00442        1      0    99 0       0.01      0.0001         0.00141
-## 4 0.00745        0      1    98 0.0102  0.0202    0.000204       0.00505
-## 5 0.0169         0      1    97 0.0103  0.0305    0.000310       0.00984
-## 6 0.0220         0      1    96 0.0104  0.0409    0.000419       0.0154 
+##     time censor events   nar    haz cum_haz cum_haz_var cum_haz_lower
+##    <dbl>  <dbl>  <dbl> <dbl>  <dbl>   <dbl>       <dbl>         <dbl>
+## 1 0           0      0   100 0       0         0              0      
+## 2 0.0157      0      1   100 0.01    0.01      0.0001         0.00141
+## 3 0.0272      0      1    99 0.0101  0.0201    0.000202       0.00503
+## 4 0.0309      1      0    98 0       0.0201    0.000202       0.00503
+## 5 0.0448      1      0    97 0       0.0201    0.000202       0.00503
+## 6 0.0530      0      1    96 0.0104  0.0305    0.000311       0.00984
 ## # ℹ 5 more variables: cum_haz_upper <dbl>, surv <dbl>, surv_var <dbl>,
 ## #   surv_lower <dbl>, surv_upper <dbl>
 ```
@@ -78,43 +80,43 @@ head(km_tab)
 * Calculate the event rate at a point in time.
 
 
-```r
+``` r
 # Rate.
 SurvUtils::OneSampleRates(data, tau = 1.0)
 ```
 
 ```
-##   tau      rate        se     lower     upper
-## 1   1 0.3462829 0.0492781 0.2516968 0.4425296
+##   tau      rate         se     lower     upper
+## 1   1 0.7195301 0.04771469 0.6239354 0.8084374
 ```
 
 
-```r
+``` r
 # Percentile: median.
 SurvUtils::OneSamplePercentiles(data, p = 0.5)
 ```
 
 ```
 ##   prob      time     lower     upper
-## 1  0.5 0.6742626 0.4251883 0.7910864
+## 1  0.5 0.6999805 0.4853516 0.8554904
 ```
 
 
-```r
+``` r
 # RMST.
 SurvUtils::OneSampleRMST(data, tau = 1.0)
 ```
 
 ```
-##   tau       auc         se     lower    upper
-## 1   1 0.5986377 0.03840798 0.5233595 0.673916
+##   tau       auc         se     lower     upper
+## 1   1 0.6352103 0.03437084 0.5678447 0.7025759
 ```
 
 ## Two Sample
 
 ### Generate Data
 
-```r
+``` r
 data0 <- SurvUtils::GenData(
   base_event_rate = 1.0,
   censoring_rate = 0.25,
@@ -135,47 +137,47 @@ data <- rbind(data0, data1)
 
 ### Compare Rates
 
-```r
+``` r
 SurvUtils::CompareRates(data, tau = 1.0)
 ```
 
 ```
 ## Marginal Statistics:
 ##   arm tau  rate     se
-## 1   0   1 0.358 0.0496
-## 2   1   1 0.597 0.0531
+## 1   0   1 0.429 0.0553
+## 2   1   1 0.545 0.0528
 ## 
 ## 
 ## Contrasts:
-##   stat   est     se  lower upper        p
-## 1   rd 0.239 0.0726 0.0968 0.382 0.000993
-## 2   rr 1.670 0.2740 1.2100 2.300 0.001880
-## 3   or 2.660 0.8200 1.4500 4.870 0.001530
+##   stat   est     se  lower upper     p
+## 1   rd 0.116 0.0764 -0.034 0.266 0.130
+## 2   rr 1.270 0.2040  0.926 1.740 0.138
+## 3   or 1.590 0.4940  0.867 2.930 0.133
 ```
 
 ### Compare RMSTs
 
-```r
+``` r
 SurvUtils::CompareRMSTs(data, tau = 1.0)
 ```
 
 ```
 ## Marginal Statistics:
 ##   tau   auc     se lower upper arm
-## 1   1 0.579 0.0386 0.503 0.655   0
-## 2   1 0.803 0.0308 0.742 0.863   1
+## 1   1 0.677 0.0379 0.603 0.751   0
+## 2   1 0.754 0.0342 0.687 0.821   1
 ## 
 ## 
 ## Contrasts:
-##   stat   est     se lower upper        p
-## 1   rd 0.224 0.0494 0.127  0.32 6.04e-06
-## 2   rr 1.390 0.1070 1.190  1.61 2.22e-05
+##   stat    est     se   lower upper     p
+## 1   rd 0.0773 0.0510 -0.0227 0.177 0.130
+## 2   rr 1.1100 0.0802  0.9680 1.280 0.133
 ```
 
 ### Compare Cox Models
 Compare the predictive performance of Cox models based on different sets of covariates with respect to their c-statistics on held-out data via k-fold cross validation.
 
-```r
+``` r
 # Simulate data.
 n <- 1000
 x1 <- rnorm(n)
@@ -187,7 +189,7 @@ data <- SurvUtils::GenData(
 )
 
 # Evaluate.
-eval <- CompreCoxCstat(
+eval <- CompareCoxCstat(
   status = data$status,
   time = data$time,
   x1 = data %>% dplyr::select(x1, x2),
@@ -199,12 +201,12 @@ head(round(eval, digits = 3))
 
 ```
 ##   fold cstat1 cstat2  diff ratio
-## 1    1  0.812  0.735 0.077 1.104
-## 2    2  0.801  0.703 0.097 1.138
-## 3    3  0.784  0.654 0.130 1.199
-## 4    4  0.744  0.633 0.112 1.176
-## 5    5  0.724  0.654 0.070 1.108
-## 6    6  0.737  0.679 0.058 1.086
+## 1    1  0.821  0.772 0.049 1.064
+## 2    2  0.787  0.672 0.115 1.171
+## 3    3  0.735  0.628 0.107 1.171
+## 4    4  0.799  0.688 0.112 1.162
+## 5    5  0.786  0.735 0.051 1.070
+## 6    6  0.803  0.710 0.093 1.130
 ```
 
 # Inference
@@ -214,7 +216,7 @@ For a tutorial on influence functions and the perturbation bootstrap, see [this 
 # Plotting
 
 
-```r
+``` r
 # Generate data.
 arm1 <- SurvUtils::GenData(base_event_rate = 0.8)
 arm1$arm <- 1
@@ -228,7 +230,7 @@ data <- rbind(arm1, arm0)
 ### Standard Kaplan-Meier
 
 
-```r
+``` r
 x_breaks <- seq(from = 0.0, to = 4.0, by = 0.50)
 data0 <- data %>% dplyr::filter(arm == 0)
 fit0 <- Temporal::FitParaSurv(data0)  # Optional parametric fit. 
@@ -243,12 +245,12 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-13-1.png" alt="" style="display: block; margin: auto;" />
 
 ### AUC
 
 
-```r
+``` r
 x_breaks <- seq(from = 0.0, to = 4.0, by = 0.50)
 data0 <- data %>% dplyr::filter(arm == 0)
 q_auc <- SurvUtils::PlotOneSampleAUC(data0, x_breaks = x_breaks, x_max = 4, tau = 3)
@@ -262,12 +264,12 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-14-1.png" alt="" style="display: block; margin: auto;" />
 
 ## Two Sample
 
 
-```r
+``` r
 x_breaks <- seq(from = 0.0, to = 4.0, by = 0.50)
 contrast <- Temporal::CompParaSurv(data)  # Optional parametric fit. 
 q_km <- SurvUtils::PlotTwoSampleKM(data, contrast = contrast, x_breaks = x_breaks, x_max = 4)
@@ -281,4 +283,4 @@ cowplot::plot_grid(
 )
 ```
 
-<img src="README_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-html/unnamed-chunk-15-1.png" alt="" style="display: block; margin: auto;" />

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_auc.R
 \name{PlotOneSampleAUC}
 \alias{PlotOneSampleAUC}
-\title{Plot Area Under the Kaplan-Meier Curve.}
+\title{Plot Area Under the Kaplan-Meier Curve}
 \usage{
 PlotOneSampleAUC(
   data,
@@ -24,7 +24,7 @@ PlotOneSampleAUC(
 )
 }
 \arguments{
-\item{data}{Data including time, status, arm.}
+\item{data}{Data.frame with time and status.}
 
 \item{color}{Color.}
 
@@ -60,5 +60,6 @@ PlotOneSampleAUC(
 ggplot.
 }
 \description{
-Plot Area Under the Kaplan-Meier Curve.
+Plots the survival (or cumulative incidence) curve with the area under the
+curve up to \code{tau} shaded (restricted mean survival time visualization).
 }

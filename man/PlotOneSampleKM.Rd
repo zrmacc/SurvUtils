@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_kaplan_meier.R
 \name{PlotOneSampleKM}
 \alias{PlotOneSampleKM}
-\title{Plot One Sample Survival}
+\title{Plot One Sample Kaplan-Meier Curve}
 \usage{
 PlotOneSampleKM(
   data,
@@ -57,5 +57,7 @@ PlotOneSampleKM(
 ggplot.
 }
 \description{
-Plot One Sample Survival
+Produces a step plot of the Kaplan-Meier survival (or cumulative incidence)
+curve with optional pointwise confidence interval and optional parametric
+overlay from the Temporal package.
 }
