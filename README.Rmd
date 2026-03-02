@@ -2,14 +2,14 @@
 title: "README"
 author: "Zachary McCaw"
 date: "`r Sys.Date()`"
-output: 
-  html_document: 
-    keep_md: TRUE
+output:
+  github_document
 --- 
 
 # Utility Functions for Survival Analysis
 
 [![R-CMD-check](https://github.com/zrmacc/SurvUtils/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/zrmacc/SurvUtils/actions/workflows/R-CMD-check.yaml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13927061.svg)](https://doi.org/10.5281/zenodo.13927061)
 
 Zachary R. McCaw <br>
 Updated: 2026-02-22
